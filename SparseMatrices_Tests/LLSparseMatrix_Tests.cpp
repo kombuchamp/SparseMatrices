@@ -151,7 +151,34 @@ namespace SparseMatrices_Tests
 			Assert::AreEqual(154, resultMat->ElementAt(1, 1));
 		}
 
-		TEST_METHOD(ShouldMultiplySparseMatrices)
+		TEST_METHOD(ShouldMultiplySparseMatrices_0)
+		{
+			LLSparseMatrix<int> mat0(2, 3);
+			LLSparseMatrix<int> mat1(3, 2);
+
+			mat0.SetElement(0, 0, 0);
+			mat0.SetElement(0, 1, 1);
+			mat0.SetElement(0, 2, 0);
+			mat0.SetElement(1, 0, 2);
+			mat0.SetElement(1, 1, 0);
+			mat0.SetElement(1, 2, 3);
+
+			mat1.SetElement(0, 0, 4);
+			mat1.SetElement(0, 1, 0);
+			mat1.SetElement(1, 0, 0);
+			mat1.SetElement(1, 1, 6);
+			mat1.SetElement(2, 0, 5);
+			mat1.SetElement(2, 1, 0);
+
+			auto resultMat = mat0.Multiply(&mat1);
+
+			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
+			Assert::AreEqual(6, resultMat->ElementAt(0, 1));
+			Assert::AreEqual(23, resultMat->ElementAt(1, 0));
+			Assert::AreEqual(0, resultMat->ElementAt(1, 1));
+		}
+
+		TEST_METHOD(ShouldMultiplySparseMatrices_1)
 		{
 			LLSparseMatrix<int> mat0(2, 3);
 			LLSparseMatrix<int> mat1(3, 2);

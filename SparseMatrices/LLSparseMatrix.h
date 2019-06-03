@@ -306,6 +306,11 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 		}
 		else if (thisItr->col < otherItr->col)
 		{
+			// If thisItr stepped into another row, return otherItr to its beginning
+			if (thisItr->nextNode != nullptr && thisItr->row != thisItr->nextNode->row)
+			{
+				otherItr = otherItr->nextNode;
+			}
 			thisItr = thisItr->nextNode;
 		}
 		else //(thisItr->col > otherItr->col)
@@ -317,8 +322,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 			}
 			otherItr = otherItr->nextNode;
 		}
-
-
 	}
 	other->Transponse();
 	for (auto item : idxValMap)

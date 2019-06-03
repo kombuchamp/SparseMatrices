@@ -12,19 +12,19 @@ int main()
 	LLSparseMatrix<int> mat0(2, 3);
 	LLSparseMatrix<int> mat1(3, 2);
 
-	mat0.SetElement(0, 0, 1);
-	mat0.SetElement(0, 1, 0);
-	mat0.SetElement(0, 2, 2);
-	mat0.SetElement(1, 0, 0);
-	mat0.SetElement(1, 1, 3);
-	mat0.SetElement(1, 2, 0);
+	mat0.SetElement(0, 0, 0);
+	mat0.SetElement(0, 1, 1);
+	mat0.SetElement(0, 2, 0);
+	mat0.SetElement(1, 0, 2);
+	mat0.SetElement(1, 1, 0);
+	mat0.SetElement(1, 2, 3);
 
-	mat1.SetElement(0, 0, 0);
-	mat1.SetElement(0, 1, 4);
-	mat1.SetElement(1, 0, 5);
-	mat1.SetElement(1, 1, 0);
-	mat1.SetElement(2, 0, 0);
-	mat1.SetElement(2, 1, 6);
+	mat1.SetElement(0, 0, 4);
+	mat1.SetElement(0, 1, 0);
+	mat1.SetElement(1, 0, 0);
+	mat1.SetElement(1, 1, 6);
+	mat1.SetElement(2, 0, 5);
+	mat1.SetElement(2, 1, 0);
 
 	OUTPUT("***MATRICES***");
 	std::cout << mat0 << "\n" << std::endl;
