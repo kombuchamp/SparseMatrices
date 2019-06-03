@@ -32,6 +32,7 @@ public:
 	int GetRowCount() const;
 	int GetColCount() const;
 	void Transponse();
+	LLSparseMatrix<T> *Multiply_OLD(LLSparseMatrix<T> *other);
 	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T> *other);
 private:
 	struct MatrixNode;
@@ -242,7 +243,7 @@ void LLSparseMatrix<T>::Transponse()
 
 
 template<class T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
+LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_OLD(LLSparseMatrix<T> *other)
 {
 	if (this->colCount != other->rowCount)
 	{
@@ -361,6 +362,86 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 		}
 	}
 	other->Transponse();
+	for (auto item : idxValMap)
+	{
+		auto [indices, value] = item;
+		auto [i, j] = indices;
+		std::cout << "(" << i << ", " << j << ")" << " = " << value << std::endl;
+
+		// Create result matrix
+		result->SetElement(i, j, value);
+	}
+	return result;
+}
+
+template<class T>
+LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
+{
+	/** Gustavson algorithm
+	 * Gustavson F. Two Fast Algorithms for Sparse Matrices: Multiplication and
+	 * Permuted Transposition // ACM Transactions on Mathematical Software
+	 * (TOMS), Volume 4 Issue 3, Sept. 1978. – Pp. 250-269
+	 */
+	if (this->colCount != other->rowCount)
+	{
+		throw std::exception("Invalid argument: impossible to multiply incompatible matrices");
+	}
+	auto *result = new LLSparseMatrix(this->rowCount, other->colCount);
+
+	auto *thisItr = this->firstNode;
+	auto *otherItr = other->firstNode;
+	std::map< std::pair<int, int>, T> idxValMap;
+	//bool isLastRow = false;
+	// Resulting row is a ROW of FIRST matrix
+	// Resulting col is a ROW of SECOND matrix
+	auto *currentOtherRowStart = otherItr;
+
+	// Iterating through this matrix
+	/**
+	 * We should iterate through first matrix elements
+	 * and for each of this elements A[i, j] we should multiply
+	 * by every element in j-th row of other matrix
+	 */
+	while (thisItr != nullptr)
+	{
+		// Just reset. We could remember current row, 
+		// but we should consider problems with sparse matrices.
+		otherItr = other->firstNode;
+
+		if (thisItr->col != otherItr->row)
+		{
+			// Find the row we need
+			while (otherItr != nullptr && thisItr->col != otherItr->row)
+			{
+				otherItr = otherItr->nextNode;
+			}
+			if (otherItr == nullptr)
+			{
+				// There is no such row. Goto next step
+				thisItr = thisItr->nextNode;
+				continue;
+			}
+
+		}
+
+		std::cout << "**First matrix element: " << thisItr->value << "**" << std::endl;
+
+		// Calculate partial sums
+		while (otherItr != nullptr && thisItr->col == otherItr->row)
+		{
+			std::cout << thisItr->value << " <---> ";
+			std::cout << otherItr->value << std::endl;
+			int i = thisItr->row;
+			int j = otherItr->col;
+			idxValMap[std::pair<int, int>(i, j)] += thisItr->value * otherItr->value;
+
+			otherItr = otherItr->nextNode;
+		}
+
+		// Done with current element, go to another
+		thisItr = thisItr->nextNode;
+	}
+
 	for (auto item : idxValMap)
 	{
 		auto [indices, value] = item;
