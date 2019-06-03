@@ -12,25 +12,25 @@ int main()
 	LLSparseMatrix<int> mat0(3, 3);
 	LLSparseMatrix<int> mat1(3, 3);
 
-	mat0.SetElement(0, 0, 1);
-	mat0.SetElement(0, 1, 2);
-	mat0.SetElement(0, 2, 3);
-	mat0.SetElement(1, 0, 0);
-	mat0.SetElement(1, 1, 0);
-	mat0.SetElement(1, 2, 0);
-	mat0.SetElement(2, 0, 4);
-	mat0.SetElement(2, 1, 5);
-	mat0.SetElement(2, 2, 6);
+	mat0.SetElement(0, 0, 0);
+	mat0.SetElement(0, 1, 0);
+	mat0.SetElement(0, 2, 0);
+	mat0.SetElement(1, 0, 1);
+	mat0.SetElement(1, 1, 2);
+	mat0.SetElement(1, 2, 3);
+	mat0.SetElement(2, 0, 0);
+	mat0.SetElement(2, 1, 0);
+	mat0.SetElement(2, 2, 0);
 
-	mat1.SetElement(0, 0, 0);
-	mat1.SetElement(0, 1, 0);
-	mat1.SetElement(0, 2, 0);
-	mat1.SetElement(1, 0, 7);
-	mat1.SetElement(1, 1, 8);
-	mat1.SetElement(1, 2, 9);
-	mat1.SetElement(2, 0, 0);
-	mat1.SetElement(2, 1, 0);
-	mat1.SetElement(2, 2, 0);
+	mat1.SetElement(0, 0, 4);
+	mat1.SetElement(0, 1, 5);
+	mat1.SetElement(0, 2, 6);
+	mat1.SetElement(1, 0, 0);
+	mat1.SetElement(1, 1, 0);
+	mat1.SetElement(1, 2, 0);
+	mat1.SetElement(2, 0, 7);
+	mat1.SetElement(2, 1, 8);
+	mat1.SetElement(2, 2, 9);
 
 	OUTPUT("***MATRICES***");
 	std::cout << mat0 << "\n" << std::endl;
