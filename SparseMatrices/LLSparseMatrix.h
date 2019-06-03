@@ -272,18 +272,32 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 		}
 		if (otherItr == nullptr)
 		{
+			//if (isLastRow)
+			//{
+			//	// We done
+			//	break;
+			//}
+
+			// We done with current row, switch to another
+
+			// WE CAN REACH THE END OF OTHER MAT BEFORE WE REACH THE END OF CURRENT ROW
+			while (!(currentRowStart->row < thisItr->row))
+			{
+				if (thisItr->nextNode == nullptr)
+				{
+					// We're on the last row, so we're done
+					isLastRow = true;
+					break;
+				}
+				thisItr = thisItr->nextNode;
+			}
 			if (isLastRow)
 			{
 				// We done
 				break;
 			}
-			else
-			{
-				// We done with current row, switch to another
-				currentRowStart = thisItr;
-				thisItr = thisItr;
-				otherItr = other->firstNode;
-			}
+			currentRowStart = thisItr;
+			otherItr = other->firstNode;
 		}
 		if (thisItr->row != currentRowStart->row)
 		{
@@ -301,8 +315,31 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 			int j = otherItr->row;
 			idxValMap[std::pair<int, int>(i, j)] += thisItr->value * otherItr->value;
 
-			thisItr = thisItr->nextNode;
-			otherItr = otherItr->nextNode;
+
+			// MOVE BOTH ITRS IF THEY BOTH WILL BE ON THE SAME LINE
+			if (thisItr->nextNode == nullptr
+				|| otherItr->nextNode == nullptr
+				|| thisItr->nextNode->row == otherItr->nextNode->row)
+			{
+				// If other row changes here, we can return first row to the beginning of line to prevent everything from breaking
+				if (otherItr->nextNode != nullptr && otherItr->row != otherItr->nextNode->row)
+				{
+					thisItr = currentRowStart;
+				}
+				else
+				{
+					thisItr = thisItr->nextNode;
+				}
+				otherItr = otherItr->nextNode;
+			}
+			else if (thisItr->nextNode->row > otherItr->nextNode->row)
+			{
+				otherItr = otherItr->nextNode;
+			}
+			else if (thisItr->nextNode->row < otherItr->nextNode->row)
+			{
+				thisItr = thisItr->nextNode;
+			}
 		}
 		else if (thisItr->col < otherItr->col)
 		{
