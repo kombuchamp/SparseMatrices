@@ -29,6 +29,8 @@ public:
 	bool RemoveElement(int row, int col);
 	void Print(std::ostream &) const;
 	int GetNonZeroElementsCount() const;
+	int GetRowCount() const;
+	int GetColCount() const;
 	void Transponse();
 	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T> *other);
 private:
@@ -214,6 +216,18 @@ int LLSparseMatrix<T>::GetNonZeroElementsCount() const
 	return nonZeroElementsCount;
 }
 
+template<class T>
+int LLSparseMatrix<T>::GetRowCount() const
+{
+	return rowCount;
+}
+
+template<class T>
+int LLSparseMatrix<T>::GetColCount() const
+{
+	return colCount;
+}
+
 
 template<class T>
 void LLSparseMatrix<T>::Transponse()
@@ -248,6 +262,11 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 		if (thisItr == nullptr)
 		{
 			// Last row ended
+			if (otherItr == nullptr || otherItr->nextNode == nullptr)
+			{
+				// We done
+				break;
+			}
 			isLastRow = true;
 			thisItr = currentRowStart;
 		}
@@ -289,8 +308,13 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 		{
 			thisItr = thisItr->nextNode;
 		}
-		else
+		else //(thisItr->col > otherItr->col)
 		{
+			// If otherItr stepped into another row, return thisItr to its beginning
+			if (otherItr->nextNode != nullptr && otherItr->row != otherItr->nextNode->row)
+			{
+				thisItr = currentRowStart;
+			}
 			otherItr = otherItr->nextNode;
 		}
 
