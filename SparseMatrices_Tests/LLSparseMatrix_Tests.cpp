@@ -239,8 +239,8 @@ namespace SparseMatrices_Tests
 			Assert::AreEqual(0, resultMat->ElementAt(1, 1));
 			Assert::AreEqual(0, resultMat->ElementAt(1, 2));
 			Assert::AreEqual(35, resultMat->ElementAt(2, 0));
-			Assert::AreEqual(40, resultMat->ElementAt(1, 1));
-			Assert::AreEqual(45, resultMat->ElementAt(1, 2));
+			Assert::AreEqual(40, resultMat->ElementAt(2, 1));
+			Assert::AreEqual(45, resultMat->ElementAt(2, 2));
 		}
 	};
 }
