@@ -25,7 +25,7 @@ int main()
 	std::cout << mat0 << "\n" << std::endl;
 	std::cout << mat1 << "\n" << std::endl;
 	OUTPUT("*STARTING PROCESS...*");
-	std::unique_ptr<LLSparseMatrix<int>> mat2(mat0.Multiply(&mat1));
+	std::unique_ptr<LLSparseMatrix<int>> mat2(mat0 * mat1);
 	std::cout << "DONE: " << std::endl;
 	std::cout << *mat2;
 

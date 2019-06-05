@@ -143,7 +143,7 @@ namespace SparseMatrices_Tests
 			mat1.SetElement(2, 0, 11);
 			mat1.SetElement(2, 1, 12);
 
-			auto resultMat = mat0.Multiply(&mat1);
+			auto resultMat = mat0.Multiply(mat1);
 
 			Assert::AreEqual(58, resultMat->ElementAt(0, 0));
 			Assert::AreEqual(64, resultMat->ElementAt(0, 1));
@@ -170,7 +170,7 @@ namespace SparseMatrices_Tests
 			mat1.SetElement(2, 0, 5);
 			mat1.SetElement(2, 1, 0);
 
-			auto resultMat = mat0.Multiply(&mat1);
+			auto resultMat = mat0.Multiply(mat1);
 
 			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
 			Assert::AreEqual(6, resultMat->ElementAt(0, 1));
@@ -197,7 +197,7 @@ namespace SparseMatrices_Tests
 			mat1.SetElement(2, 0, 0);
 			mat1.SetElement(2, 1, 6);
 
-			auto resultMat = mat0.Multiply(&mat1);
+			auto resultMat = mat0.Multiply(mat1);
 
 			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
 			Assert::AreEqual(16, resultMat->ElementAt(0, 1));
@@ -230,7 +230,7 @@ namespace SparseMatrices_Tests
 			mat1.SetElement(2, 1, 0);
 			mat1.SetElement(2, 2, 0);
 
-			auto resultMat = mat0.Multiply(&mat1);
+			auto resultMat = mat0.Multiply(mat1);
 
 			Assert::AreEqual(14, resultMat->ElementAt(0, 0));
 			Assert::AreEqual(16, resultMat->ElementAt(0, 1));
@@ -268,7 +268,7 @@ namespace SparseMatrices_Tests
 			mat1.SetElement(2, 1, 9);
 			mat1.SetElement(2, 2, 0);
 
-			auto resultMat = mat0.Multiply(&mat1);
+			auto resultMat = mat0.Multiply(mat1);
 
 			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
 			Assert::AreEqual(43, resultMat->ElementAt(0, 1));
@@ -306,7 +306,7 @@ namespace SparseMatrices_Tests
 			mat1.SetElement(2, 1, 8);
 			mat1.SetElement(2, 2, 9);
 
-			auto resultMat = mat0.Multiply(&mat1);
+			auto resultMat = mat0.Multiply(mat1);
 
 			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
 			Assert::AreEqual(0, resultMat->ElementAt(0, 1));

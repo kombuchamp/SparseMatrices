@@ -32,10 +32,10 @@ public:
 	[[nodiscard]] int GetNonZeroElementsCount() const override;
 	[[nodiscard]] int GetRowCount() const override;
 	[[nodiscard]] int GetColCount() const override;
-	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T> *other);
+	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T>& other);
 	[[deprecated("Use multiply instead (more efficient)")]]
 	LLSparseMatrix<T> *Multiply_DEPRECATED(LLSparseMatrix<T> *other);
-	LLSparseMatrix<T>* operator*(LLSparseMatrix<T>* other);
+	LLSparseMatrix<T>* operator*(LLSparseMatrix<T> &other);
 private:
 	struct MatrixNode;
 	[[nodiscard]] bool InBoundaries(int row, int col) const;
@@ -366,25 +366,25 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 }
 
 template<class T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
-{
+LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
+{/*
 	if (other == nullptr)
 	{
 		throw std::invalid_argument("Other matrix can't be nullptr");
-	}
-	if (this->colCount != other->rowCount)
+	}*/
+	if (this->colCount != other.rowCount)
 	{
 		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
 	}
 
-	auto *result = new LLSparseMatrix(this->rowCount, other->colCount);
-	if (this->firstNode == nullptr || other->firstNode == nullptr)
+	auto *result = new LLSparseMatrix(this->rowCount, other.colCount);
+	if (this->firstNode == nullptr || other.firstNode == nullptr)
 	{
 		return result;
 	}
 
 	auto *thisPtr = this->firstNode;
-	auto *otherPtr = other->firstNode;
+	auto *otherPtr = other.firstNode;
 	std::map<std::pair<int, int>, T> idxValMap;
 
 	// Multiplication loop
@@ -399,7 +399,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 	{
 		// Just reset.
 		// Can't just remember previous row because of sparsity
-		otherPtr = other->firstNode;
+		otherPtr = other.firstNode;
 
 		// Find corresponding row
 		if (thisPtr->col != otherPtr->row)
@@ -521,7 +521,7 @@ std::ostream &operator<<(std::ostream &os, LLSparseMatrix<T> &sm)
 }
 
 template<class T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::operator*(LLSparseMatrix<T> *other)
+LLSparseMatrix<T> *LLSparseMatrix<T>::operator*(LLSparseMatrix<T> &other)
 {
 	return Multiply(other);
 }
