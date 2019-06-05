@@ -242,13 +242,18 @@ void LLSparseMatrix<T>::Transpose()
 	SortByPosition(&firstNode);
 }
 
-
+/**
+ * Naive implementation of matrix multiplication
+ * This algorithm is inefficient, ugly, non-robust and the only reason I'm keeping it here
+ * being amounts of blood I spilled figuring it out.
+ * I came up with something more efficient, see Multiply method
+ */
 template<class T>
 LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *other)
 {
 	if (this->colCount != other->rowCount)
 	{
-		throw std::exception("Invalid argument: impossible to multiply incompatible matrices");
+		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
 	}
 	auto *result = new LLSparseMatrix(this->rowCount, other->colCount);
 	other->Transpose();
@@ -257,8 +262,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 	std::map< std::pair<int, int>, T> idxValMap;
 	auto *currentRowStart = thisItr;
 	bool isLastRow = false;
-	// Resulting row is a ROW of FIRST matrix
-	// Resulting col is a ROW of SECOND matrix
+
 	while (true)
 	{
 		if (thisItr == nullptr)
@@ -274,20 +278,12 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 		}
 		if (otherItr == nullptr)
 		{
-			//if (isLastRow)
-			//{
-			//	// We done
-			//	break;
-			//}
-
-			// We done with current row, switch to another
-
-			// WE CAN REACH THE END OF OTHER MAT BEFORE WE REACH THE END OF CURRENT ROW
+			// We can reach the end of other mat before the current mat
 			while (!(currentRowStart->row < thisItr->row))
 			{
 				if (thisItr->nextNode == nullptr)
 				{
-					// We're on the last row, so we're done
+					// On the last row. Done
 					isLastRow = true;
 					break;
 				}
@@ -295,7 +291,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 			}
 			if (isLastRow)
 			{
-				// We done
+				// Done
 				break;
 			}
 			currentRowStart = thisItr;
@@ -307,18 +303,14 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 			thisItr = currentRowStart;
 		}
 
-		std::cout << thisItr->value << " <---> ";
-		std::cout << otherItr->value << std::endl;
-
 		if (thisItr->col == otherItr->col)
 		{
-			// Need to multiply
 			int i = thisItr->row;
 			int j = otherItr->row;
 			idxValMap[std::pair<int, int>(i, j)] += thisItr->value * otherItr->value;
 
 
-			// MOVE BOTH ITRS IF THEY BOTH WILL BE ON THE SAME LINE
+			// Move both itrs if they both will be on the same line next turn
 			if (thisItr->nextNode == nullptr
 				|| otherItr->nextNode == nullptr
 				|| thisItr->nextNode->row == otherItr->nextNode->row)
@@ -367,9 +359,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 	{
 		auto [indices, value] = item;
 		auto [i, j] = indices;
-		std::cout << "(" << i << ", " << j << ")" << " = " << value << std::endl;
-
-		// Create result matrix
 		result->SetElement(i, j, value);
 	}
 	return result;
@@ -465,7 +454,7 @@ void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
 template<class T>
 void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second)
 {
-	// Floyd's tortoise algorithm finding middle of linked list
+	// Floyd's tortoise algorithm of finding middle of linked list
 	MatrixNode *slow = head;
 	MatrixNode *fast = head->nextNode;
 
