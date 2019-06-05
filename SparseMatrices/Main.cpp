@@ -2,9 +2,8 @@
 #include <iostream>
 #include <memory>
 
-using namespace std;
-
-#define OUTPUT(X) std::cout << (X) << std::endl
+using std::cout;
+using std::endl;
 
 int main()
 {
@@ -31,13 +30,15 @@ int main()
 	mat1.SetElement(2, 1, 9);
 	mat1.SetElement(2, 2, 0);
 
-	OUTPUT("***MATRICES***");
-	std::cout << mat0 << "\n" << std::endl;
-	std::cout << mat1 << "\n" << std::endl;
-	OUTPUT("*STARTING PROCESS...*");
-	auto mat2 = mat0 * mat1;
-	std::cout << "DONE: " << std::endl;
-	std::cout << *mat2;
+	cout << "***MATRICES***" << endl;
+	cout << mat0 << endl;
+	cout << mat1 << endl;
+	cout << "*STARTING PROCESS...*" << endl;
+
+	std::unique_ptr<LLSparseMatrix<int>> mat2(mat0 * mat1);
+
+	cout << "DONE: " << endl;
+	cout << *mat2 << endl;
 
 	return 0;
 }
