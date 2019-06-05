@@ -29,12 +29,13 @@ public:
 	bool RemoveElement(int row, int col) override;
 	void Print(std::ostream &) const override;
 	void Transpose() override;
-	[[nodiscard]] int GetNonZeroElementsCount() const;
-	[[nodiscard]] int GetRowCount() const;
-	[[nodiscard]] int GetColCount() const;
+	[[nodiscard]] int GetNonZeroElementsCount() const override;
+	[[nodiscard]] int GetRowCount() const override;
+	[[nodiscard]] int GetColCount() const override;
 	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T> *other);
 	[[deprecated("Use multiply instead (more efficient)")]]
 	LLSparseMatrix<T> *Multiply_DEPRECATED(LLSparseMatrix<T> *other);
+	LLSparseMatrix<T>* operator*(LLSparseMatrix<T>* other);
 private:
 	struct MatrixNode;
 	[[nodiscard]] bool InBoundaries(int row, int col) const;
@@ -51,7 +52,7 @@ private:
 template<class T>
 struct LLSparseMatrix<T>::MatrixNode
 {
-	MatrixNode(int row, int col, T &val)
+	MatrixNode(const int row, const int col, T const &val)
 		: row(row), col(col), value(val), nextNode(nullptr)
 	{
 	}
@@ -63,11 +64,11 @@ struct LLSparseMatrix<T>::MatrixNode
 
 
 template<class T>
-void LLSparseMatrix<T>::Resize(int rows, int cols)
+void LLSparseMatrix<T>::Resize(const int rows, const int cols)
 {
 	if (rows < rowCount || cols < colCount)
 	{
-		throw std::exception("Can't reduce matrix size");
+		throw std::invalid_argument("Can't reduce matrix size");
 	}
 	rowCount = rows;
 	colCount = cols;
@@ -76,11 +77,11 @@ void LLSparseMatrix<T>::Resize(int rows, int cols)
 template<class T>
 LLSparseMatrix<T>::~LLSparseMatrix()
 {
-	if (!firstNode)
+	if (firstNode == nullptr)
 	{
 		return;
 	}
-	if (!firstNode->nextNode)
+	if (firstNode->nextNode == nullptr)
 	{
 		delete firstNode;
 		return;
@@ -98,9 +99,9 @@ T LLSparseMatrix<T>::ElementAt(int row, int col) const
 {
 	if (!InBoundaries(row, col))
 	{
-		throw std::exception("Element indices are out of bounds");
+		throw std::invalid_argument("Element indices are out of bounds");
 	}
-	for (auto node = firstNode; node != nullptr; node = node->nextNode)
+	for (auto *node = firstNode; node != nullptr; node = node->nextNode)
 	{
 		if (node->row == row && node->col == col)
 		{
@@ -115,7 +116,7 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 {
 	if (!InBoundaries(row, col))
 	{
-		throw std::exception("Element indices are out of bounds");
+		throw std::invalid_argument("Element indices are out of bounds");
 	}
 	if (val == T())
 	{
@@ -125,7 +126,6 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 	if (firstNode == nullptr)
 	{
 		firstNode = new MatrixNode(row, col, val);
-		return;
 	}
 	else
 	{
@@ -154,7 +154,7 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 			}
 			prevNode = node;
 		}
-		MatrixNode *newNode = new MatrixNode(row, col, val);
+		auto *newNode = new MatrixNode(row, col, val);
 		prevNode->nextNode = newNode;
 	}
 }
@@ -164,7 +164,7 @@ bool LLSparseMatrix<T>::RemoveElement(int row, int col)
 {
 	if (!InBoundaries(row, col))
 	{
-		throw std::exception("Element indices are out of bounds");
+		throw std::invalid_argument("Element indices are out of bounds");
 	}
 
 	MatrixNode *prevNode = nullptr;
@@ -182,6 +182,7 @@ bool LLSparseMatrix<T>::RemoveElement(int row, int col)
 				prevNode->nextNode = node->nextNode;
 				delete node;
 			}
+			--nonZeroElementsCount;
 			return true;
 		}
 		prevNode = node;
@@ -193,10 +194,10 @@ bool LLSparseMatrix<T>::RemoveElement(int row, int col)
 template<class T>
 void LLSparseMatrix<T>::Print(std::ostream &os) const
 {
-	auto node = firstNode;
-	for (int i = 0; i < rowCount; i++)
+	auto *node = firstNode;
+	for (auto i = 0; i < rowCount; i++)
 	{
-		for (int j = 0; j < colCount; j++)
+		for (auto j = 0; j < colCount; j++)
 		{
 			if (node && node->row == i && node->col == j)
 			{
@@ -382,8 +383,8 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 		return result;
 	}
 
-	auto *thisItr = this->firstNode;
-	auto *otherItr = other->firstNode;
+	auto *thisPtr = this->firstNode;
+	auto *otherPtr = other->firstNode;
 	std::map<std::pair<int, int>, T> idxValMap;
 
 	// Multiplication loop
@@ -394,37 +395,37 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 	 * where key is pair of indices of element in resulting matrix.
 	 * This algorithm allows us to avoid matrix transposition or picking out column during multiplication
 	 */
-	while (thisItr != nullptr)
+	while (thisPtr != nullptr)
 	{
 		// Just reset.
 		// Can't just remember previous row because of sparsity
-		otherItr = other->firstNode;
+		otherPtr = other->firstNode;
 
 		// Find corresponding row
-		if (thisItr->col != otherItr->row)
+		if (thisPtr->col != otherPtr->row)
 		{
-			while (otherItr != nullptr && thisItr->col != otherItr->row)
+			while (otherPtr != nullptr && thisPtr->col != otherPtr->row)
 			{
-				otherItr = otherItr->nextNode;
+				otherPtr = otherPtr->nextNode;
 			}
-			if (otherItr == nullptr)
+			if (otherPtr == nullptr)
 			{
-				thisItr = thisItr->nextNode;
+				thisPtr = thisPtr->nextNode;
 				continue;
 			}
 		}
 
 		// Calculate partial sums
-		while (otherItr != nullptr && thisItr->col == otherItr->row)
+		while (otherPtr != nullptr && thisPtr->col == otherPtr->row)
 		{
-			int i = thisItr->row;
-			int j = otherItr->col;
-			idxValMap[std::pair<int, int>(i, j)] += thisItr->value * otherItr->value;
+			int i = thisPtr->row;
+			int j = otherPtr->col;
+			idxValMap[std::pair<int, int>(i, j)] += thisPtr->value * otherPtr->value;
 
-			otherItr = otherItr->nextNode;
+			otherPtr = otherPtr->nextNode;
 		}
 
-		thisItr = thisItr->nextNode;
+		thisPtr = thisPtr->nextNode;
 	}
 
 	for (auto item : idxValMap)
@@ -501,7 +502,7 @@ typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode
 }
 
 template<class T>
-bool LLSparseMatrix<T>::InBoundaries(int row, int col) const
+bool LLSparseMatrix<T>::InBoundaries(const int row, const int col) const
 {
 	return (row < rowCount && row >= 0) && (col < colCount && col >= 0);
 }
@@ -517,4 +518,10 @@ std::ostream &operator<<(std::ostream &os, LLSparseMatrix<T> &sm)
 {
 	sm.Print(os);
 	return os;
+}
+
+template<class T>
+LLSparseMatrix<T> *LLSparseMatrix<T>::operator*(LLSparseMatrix<T> *other)
+{
+	return Multiply(other);
 }
