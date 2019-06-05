@@ -1,6 +1,5 @@
 #include "LLSparseMatrix.h"
 #include <iostream>
-#include <list>
 #include <memory>
 
 using namespace std;

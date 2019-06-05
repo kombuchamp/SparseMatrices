@@ -18,29 +18,30 @@ class LLSparseMatrix : ISparseMatrix<T>
 {
 public:
 	LLSparseMatrix() = default;
-	LLSparseMatrix(int rows, int cols)
-		: rowCount(rows), colCount(cols), firstNode(nullptr), nonZeroElementsCount(0)
+	LLSparseMatrix(const int rows, const int cols)
+		: rowCount(rows), colCount(cols), nonZeroElementsCount(0), firstNode(nullptr)
 	{
 	}
 	~LLSparseMatrix();
-	T ElementAt(int row, int col) const;
-	void Resize(int rows, int cols);
-	void SetElement(int row, int col, T val);
-	bool RemoveElement(int row, int col);
-	void Print(std::ostream &) const;
-	int GetNonZeroElementsCount() const;
-	int GetRowCount() const;
-	int GetColCount() const;
-	void Transponse();
-	LLSparseMatrix<T> *Multiply_OLD(LLSparseMatrix<T> *other);
+	T ElementAt(int row, int col) const override;
+	void Resize(int rows, int cols) override;
+	void SetElement(int row, int col, T val) override;
+	bool RemoveElement(int row, int col) override;
+	void Print(std::ostream &) const override;
+	void Transpose() override;
+	[[nodiscard]] int GetNonZeroElementsCount() const;
+	[[nodiscard]] int GetRowCount() const;
+	[[nodiscard]] int GetColCount() const;
 	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T> *other);
+	[[deprecated("Use multiply instead (more efficient)")]]
+	LLSparseMatrix<T> *Multiply_DEPRECATED(LLSparseMatrix<T> *other);
 private:
 	struct MatrixNode;
-	bool InBoundaries(int row, int col) const;
-	int GetPosition(int i, int j);
+	[[nodiscard]] bool InBoundaries(int row, int col) const;
+	[[nodiscard]] int GetPosition(int row, int col) const;
 	void SortByPosition(MatrixNode **head);
 	void SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second);
-	MatrixNode *MergeSortedLists(MatrixNode *list1, MatrixNode *list2);
+	MatrixNode *MergeLists(MatrixNode *list1, MatrixNode *list2);
 	int rowCount;
 	int colCount;
 	int nonZeroElementsCount;
@@ -231,7 +232,7 @@ int LLSparseMatrix<T>::GetColCount() const
 
 
 template<class T>
-void LLSparseMatrix<T>::Transponse()
+void LLSparseMatrix<T>::Transpose()
 {
 	for (MatrixNode *node = firstNode; node != nullptr; node = node->nextNode)
 	{
@@ -243,14 +244,14 @@ void LLSparseMatrix<T>::Transponse()
 
 
 template<class T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_OLD(LLSparseMatrix<T> *other)
+LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *other)
 {
 	if (this->colCount != other->rowCount)
 	{
 		throw std::exception("Invalid argument: impossible to multiply incompatible matrices");
 	}
 	auto *result = new LLSparseMatrix(this->rowCount, other->colCount);
-	other->Transponse();
+	other->Transpose();
 	auto *thisItr = this->firstNode;
 	auto *otherItr = other->firstNode;
 	std::map< std::pair<int, int>, T> idxValMap;
@@ -361,7 +362,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_OLD(LLSparseMatrix<T> *other)
 			otherItr = otherItr->nextNode;
 		}
 	}
-	other->Transponse();
+	other->Transpose();
 	for (auto item : idxValMap)
 	{
 		auto [indices, value] = item;
@@ -421,7 +422,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 				thisItr = thisItr->nextNode;
 				continue;
 			}
-
 		}
 
 		std::cout << "**First matrix element: " << thisItr->value << "**" << std::endl;
@@ -466,7 +466,7 @@ void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
 	SplitList(currentHead, &split1, &split2);
 	SortByPosition(&split1);
 	SortByPosition(&split2);
-	*head = MergeSortedLists(split1, split2);
+	*head = MergeLists(split1, split2);
 }
 
 template<class T>
@@ -492,9 +492,9 @@ void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNo
 }
 
 template<class T>
-typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeSortedLists(MatrixNode *list1, MatrixNode *list2)
+typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode *list1, MatrixNode *list2)
 {
-	MatrixNode *newHead = nullptr;
+	MatrixNode *newHead;
 	if (list1 == nullptr)
 	{
 		return list2;
@@ -508,12 +508,12 @@ typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeSortedLists(Matr
 	if (firstPosition <= secondPosition)
 	{
 		newHead = list1;
-		newHead->nextNode = MergeSortedLists(list1->nextNode, list2);
+		newHead->nextNode = MergeLists(list1->nextNode, list2);
 	}
 	else
 	{
 		newHead = list2;
-		newHead->nextNode = MergeSortedLists(list1, list2->nextNode);
+		newHead->nextNode = MergeLists(list1, list2->nextNode);
 	}
 	return newHead;
 }
@@ -525,7 +525,7 @@ bool LLSparseMatrix<T>::InBoundaries(int row, int col) const
 }
 
 template<class T>
-int LLSparseMatrix<T>::GetPosition(int row, int col)
+int LLSparseMatrix<T>::GetPosition(const int row, const int col) const
 {
 	return colCount * row + col;
 }

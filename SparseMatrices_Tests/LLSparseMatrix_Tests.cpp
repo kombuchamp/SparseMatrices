@@ -116,7 +116,7 @@ namespace SparseMatrices_Tests
 			mat.SetElement(1, 0, 2.);
 			mat.SetElement(1, 1, 2.);
 
-			mat.Transponse();
+			mat.Transpose();
 
 			Assert::AreEqual(1., mat.ElementAt(0, 0));
 			Assert::AreEqual(2., mat.ElementAt(0, 1));
