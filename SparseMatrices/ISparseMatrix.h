@@ -1,3 +1,9 @@
+/**
+	Sparse matrix inerface
+
+	Author: Belousov K.
+*/
+
 #pragma once
 #include <ostream>
 
@@ -12,4 +18,5 @@ public:
 	virtual void Resize(int rows, int cols) = 0;
 	virtual void Print(std::ostream &) const = 0;
 	virtual void Transpose() = 0;
+	// TODO: Come up with common multiplication interface
 };

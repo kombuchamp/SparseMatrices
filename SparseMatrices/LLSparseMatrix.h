@@ -378,59 +378,56 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 template<class T>
 LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 {
-	/** Gustavson algorithm
-	 * Gustavson F. Two Fast Algorithms for Sparse Matrices: Multiplication and
-	 * Permuted Transposition // ACM Transactions on Mathematical Software
-	 * (TOMS), Volume 4 Issue 3, Sept. 1978. – Pp. 250-269
-	 */
+	if (other == nullptr)
+	{
+		throw std::invalid_argument("Other matrix can't be nullptr");
+	}
 	if (this->colCount != other->rowCount)
 	{
-		throw std::exception("Invalid argument: impossible to multiply incompatible matrices");
+		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
 	}
+
 	auto *result = new LLSparseMatrix(this->rowCount, other->colCount);
+	if (this->firstNode == nullptr || other->firstNode == nullptr)
+	{
+		return result;
+	}
 
 	auto *thisItr = this->firstNode;
 	auto *otherItr = other->firstNode;
-	std::map< std::pair<int, int>, T> idxValMap;
-	//bool isLastRow = false;
-	// Resulting row is a ROW of FIRST matrix
-	// Resulting col is a ROW of SECOND matrix
-	auto *currentOtherRowStart = otherItr;
+	std::map<std::pair<int, int>, T> idxValMap;
 
-	// Iterating through this matrix
+	// Multiplication loop
 	/**
-	 * We should iterate through first matrix elements
-	 * and for each of this elements A[i, j] we should multiply
-	 * by every element in j-th row of other matrix
+	 * Iterate through first matrix elements A[i, j].
+	 * Multiply each one by every element in j-th row of other matrix.
+	 * Accumulate multiplication result in idxValMap
+	 * where key is pair of indices of element in resulting matrix.
+	 * This algorithm allows us to avoid matrix transposition or picking out column during multiplication
 	 */
 	while (thisItr != nullptr)
 	{
-		// Just reset. We could remember current row, 
-		// but we should consider problems with sparse matrices.
+		// Just reset.
+		// Can't just remember previous row because of sparsity
 		otherItr = other->firstNode;
 
+		// Find corresponding row
 		if (thisItr->col != otherItr->row)
 		{
-			// Find the row we need
 			while (otherItr != nullptr && thisItr->col != otherItr->row)
 			{
 				otherItr = otherItr->nextNode;
 			}
 			if (otherItr == nullptr)
 			{
-				// There is no such row. Goto next step
 				thisItr = thisItr->nextNode;
 				continue;
 			}
 		}
 
-		std::cout << "**First matrix element: " << thisItr->value << "**" << std::endl;
-
 		// Calculate partial sums
 		while (otherItr != nullptr && thisItr->col == otherItr->row)
 		{
-			std::cout << thisItr->value << " <---> ";
-			std::cout << otherItr->value << std::endl;
 			int i = thisItr->row;
 			int j = otherItr->col;
 			idxValMap[std::pair<int, int>(i, j)] += thisItr->value * otherItr->value;
@@ -438,7 +435,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 			otherItr = otherItr->nextNode;
 		}
 
-		// Done with current element, go to another
 		thisItr = thisItr->nextNode;
 	}
 
@@ -446,9 +442,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> *other)
 	{
 		auto [indices, value] = item;
 		auto [i, j] = indices;
-		std::cout << "(" << i << ", " << j << ")" << " = " << value << std::endl;
-
-		// Create result matrix
 		result->SetElement(i, j, value);
 	}
 	return result;
