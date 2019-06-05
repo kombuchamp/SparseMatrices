@@ -1,5 +1,5 @@
 /**
-	Sparse matrix inerface
+	Sparse matrix interface
 
 	Author: Belousov K.
 */
