@@ -44,7 +44,8 @@ private:
 	struct MatrixNode;
 	[[nodiscard]] bool InBoundaries(int row, int col) const;
 	[[nodiscard]] int GetPosition(int row, int col) const;
-	void SortByPosition(MatrixNode **head);
+	void SortByPosition();
+	void MergeSort(MatrixNode **head);
 	void SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second);
 	MatrixNode *MergeLists(MatrixNode *list1, MatrixNode *list2);
 	size_t _rowCount;
@@ -244,7 +245,7 @@ void LLSparseMatrix<T>::Transpose()
 		std::swap(node->Row, node->Col);
 	}
 	std::swap(_rowCount, _colCount);
-	SortByPosition(&_firstNode);
+	SortByPosition();
 }
 
 /**
@@ -437,8 +438,14 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	return result;
 }
 
+template <typename T>
+void LLSparseMatrix<T>::SortByPosition()
+{
+	MergeSort(&_firstNode);
+}
+
 template<typename T>
-void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
+void LLSparseMatrix<T>::MergeSort(MatrixNode **head)
 {
 	MatrixNode *currentHead = *head;
 	MatrixNode *split1, *split2;
@@ -447,8 +454,8 @@ void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
 		return;
 	}
 	SplitList(currentHead, &split1, &split2);
-	SortByPosition(&split1);
-	SortByPosition(&split2);
+	MergeSort(&split1);
+	MergeSort(&split2);
 	*head = MergeLists(split1, split2);
 }
 
