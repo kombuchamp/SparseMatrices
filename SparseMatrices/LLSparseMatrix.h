@@ -441,6 +441,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 template <typename T>
 void LLSparseMatrix<T>::SortByPosition()
 {
+	// TODO: Create a namespace and move sorting function out of the class?
 	MergeSort(&_firstNode);
 }
 
