@@ -15,7 +15,7 @@
 #include <type_traits>
 #include "ISparseMatrix.h"
 
-template<class T = double>
+template<typename T = double>
 class LLSparseMatrix : ISparseMatrix<T>
 {
 public:
@@ -53,7 +53,7 @@ private:
 	MatrixNode *_firstNode;
 };
 
-template<class T>
+template<typename T>
 struct LLSparseMatrix<T>::MatrixNode
 {
 	MatrixNode(const int row, const int col, T const &val)
@@ -67,7 +67,7 @@ struct LLSparseMatrix<T>::MatrixNode
 };
 
 
-template<class T>
+template<typename T>
 void LLSparseMatrix<T>::Resize(const int rows, const int cols)
 {
 	if (rows < _rowCount || cols < _colCount)
@@ -78,7 +78,7 @@ void LLSparseMatrix<T>::Resize(const int rows, const int cols)
 	_colCount = cols;
 }
 
-template<class T>
+template<typename T>
 LLSparseMatrix<T>::~LLSparseMatrix()
 {
 	if (_firstNode == nullptr)
@@ -98,7 +98,7 @@ LLSparseMatrix<T>::~LLSparseMatrix()
 	}
 }
 
-template<class T>
+template<typename T>
 T LLSparseMatrix<T>::ElementAt(int row, int col) const
 {
 	if (!InBoundaries(row, col))
@@ -115,7 +115,7 @@ T LLSparseMatrix<T>::ElementAt(int row, int col) const
 	return T();
 }
 
-template<class T>
+template<typename T>
 void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 {
 	if (!InBoundaries(row, col))
@@ -163,7 +163,7 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 	}
 }
 
-template<class T>
+template<typename T>
 bool LLSparseMatrix<T>::RemoveElement(int row, int col)
 {
 	if (!InBoundaries(row, col))
@@ -195,7 +195,7 @@ bool LLSparseMatrix<T>::RemoveElement(int row, int col)
 }
 
 
-template<class T>
+template<typename T>
 void LLSparseMatrix<T>::Print(std::ostream &os) const
 {
 	auto *node = _firstNode;
@@ -217,26 +217,26 @@ void LLSparseMatrix<T>::Print(std::ostream &os) const
 	}
 }
 
-template<class T>
+template<typename T>
 size_t LLSparseMatrix<T>::GetNonZeroElementsCount() const
 {
 	return _nonZeroElementsCount;
 }
 
-template<class T>
+template<typename T>
 size_t LLSparseMatrix<T>::GetRowCount() const
 {
 	return _rowCount;
 }
 
-template<class T>
+template<typename T>
 size_t LLSparseMatrix<T>::GetColCount() const
 {
 	return _colCount;
 }
 
 
-template<class T>
+template<typename T>
 void LLSparseMatrix<T>::Transpose()
 {
 	for (MatrixNode *node = _firstNode; node != nullptr; node = node->Next)
@@ -253,7 +253,7 @@ void LLSparseMatrix<T>::Transpose()
  * being amounts of blood I spilled figuring it out.
  * I came up with something more efficient, see Multiply method
  */
-template<class T>
+template<typename T>
 LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *other)
 {
 	if (this->_colCount != other->_rowCount)
@@ -369,7 +369,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 	return result;
 }
 
-template<class T>
+template<typename T>
 LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 {
 	if (this->_colCount != other._rowCount)
@@ -437,7 +437,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	return result;
 }
 
-template<class T>
+template<typename T>
 void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
 {
 	MatrixNode *currentHead = *head;
@@ -452,7 +452,7 @@ void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
 	*head = MergeLists(split1, split2);
 }
 
-template<class T>
+template<typename T>
 void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second)
 {
 	// Floyd's tortoise algorithm of finding middle of linked list
@@ -474,7 +474,7 @@ void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNo
 	slow->Next = nullptr; // Tear list apart
 }
 
-template<class T>
+template<typename T>
 typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode *list1, MatrixNode *list2)
 {
 	MatrixNode *newHead;
@@ -501,26 +501,26 @@ typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode
 	return newHead;
 }
 
-template<class T>
+template<typename T>
 bool LLSparseMatrix<T>::InBoundaries(const int row, const int col) const
 {
 	return (row < _rowCount && row >= 0) && (col < _colCount && col >= 0);
 }
 
-template<class T>
+template<typename T>
 int LLSparseMatrix<T>::GetPosition(const int row, const int col) const
 {
 	return _colCount * row + col;
 }
 
-template<class T>
-std::ostream &operator<<(std::ostream &os, LLSparseMatrix<T> &sm)
+template<typename T>
+std::ostream &operator<<(std::ostream &os, LLSparseMatrix<T> &mat)
 {
-	sm.Print(os);
+	mat.Print(os);
 	return os;
 }
 
-template<class T>
+template<typename T>
 LLSparseMatrix<T> *LLSparseMatrix<T>::operator*(LLSparseMatrix<T> &other)
 {
 	return Multiply(other);
