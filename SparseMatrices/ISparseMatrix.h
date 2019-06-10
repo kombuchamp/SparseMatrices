@@ -2,6 +2,7 @@
 	Sparse matrix interface
 
 	Author: Belousov K.
+	Repository: https://github.com/kombuchamp/SparseMatrices
 */
 
 #pragma once

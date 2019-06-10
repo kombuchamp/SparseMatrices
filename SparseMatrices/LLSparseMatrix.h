@@ -2,6 +2,7 @@
 	Sparse matrix implementation on singly linked list
 
 	Author: Belousov K.
+	Repository: https://github.com/kombuchamp/SparseMatrices
 */
 
 #pragma once
@@ -11,16 +12,19 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <type_traits>
 #include "ISparseMatrix.h"
 
-template<class T = double> // Type with default ctor expected
+template<class T = double>
 class LLSparseMatrix : ISparseMatrix<T>
 {
 public:
-	LLSparseMatrix() = default;
+	LLSparseMatrix()
+		: LLSparseMatrix(0, 0) { }
 	LLSparseMatrix(const int rows, const int cols)
 		: rowCount(rows), colCount(cols), nonZeroElementsCount(0), firstNode(nullptr)
 	{
+		static_assert(std::is_default_constructible<T>::value, "Template type T should have default constructor");
 	}
 	~LLSparseMatrix();
 	T ElementAt(int row, int col) const override;
