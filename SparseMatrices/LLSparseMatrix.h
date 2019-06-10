@@ -9,7 +9,6 @@
 #include <iostream>
 #include <exception>
 #include <algorithm>
-#include <vector>
 #include <map>
 #include <utility>
 #include <type_traits>
