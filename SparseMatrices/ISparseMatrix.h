@@ -19,8 +19,8 @@ public:
 	virtual void Resize(int rows, int cols) = 0;
 	virtual void Print(std::ostream &) const = 0;
 	virtual void Transpose() = 0;
-	[[nodiscard]] virtual int GetNonZeroElementsCount() const = 0;
-	[[nodiscard]] virtual int GetRowCount() const = 0;
-	[[nodiscard]] virtual int GetColCount() const = 0;
+	[[nodiscard]] virtual size_t GetNonZeroElementsCount() const = 0;
+	[[nodiscard]] virtual size_t GetRowCount() const = 0;
+	[[nodiscard]] virtual size_t GetColCount() const = 0;
 	// TODO: Come up with common multiplication interface
 };

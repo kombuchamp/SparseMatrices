@@ -40,5 +40,8 @@ int main()
 	cout << "DONE: " << endl;
 	cout << *mat2 << endl;
 
+	int a = 1;
+	size_t b = 1;
+
 	return 0;
 }

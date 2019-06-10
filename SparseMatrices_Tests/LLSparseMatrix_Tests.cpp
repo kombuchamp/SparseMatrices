@@ -14,10 +14,13 @@ namespace SparseMatrices_Tests
 		{
 			LLSparseMatrix<> mat;
 
-			mat.Resize(4, 5);
+			const size_t newRows = 4;
+			const size_t newCols = 5;
 
-			Assert::AreEqual(4, mat.GetRowCount());
-			Assert::AreEqual(5, mat.GetColCount());
+			mat.Resize(newRows, newCols);
+			
+			Assert::AreEqual(newRows, mat.GetRowCount());
+			Assert::AreEqual(newCols, mat.GetColCount());
 		}
 
 		TEST_METHOD(ShouldSetElements)
