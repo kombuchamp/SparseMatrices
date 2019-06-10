@@ -57,13 +57,13 @@ template<class T>
 struct LLSparseMatrix<T>::MatrixNode
 {
 	MatrixNode(const int row, const int col, T const &val)
-		: row(row), col(col), value(val), nextNode(nullptr)
+		: Row(row), Col(col), Value(val), Next(nullptr)
 	{
 	}
-	int row;
-	int col;
-	T value;
-	MatrixNode *nextNode;
+	int Row;
+	int Col;
+	T Value;
+	MatrixNode *Next;
 };
 
 
@@ -85,13 +85,13 @@ LLSparseMatrix<T>::~LLSparseMatrix()
 	{
 		return;
 	}
-	if (_firstNode->nextNode == nullptr)
+	if (_firstNode->Next == nullptr)
 	{
 		delete _firstNode;
 		return;
 	}
 	MatrixNode *prevNode = _firstNode;
-	for (MatrixNode *node = _firstNode->nextNode; node != nullptr; node = node->nextNode)
+	for (MatrixNode *node = _firstNode->Next; node != nullptr; node = node->Next)
 	{
 		delete prevNode;
 		prevNode = node;
@@ -105,11 +105,11 @@ T LLSparseMatrix<T>::ElementAt(int row, int col) const
 	{
 		throw std::invalid_argument("Element indices are out of bounds");
 	}
-	for (auto *node = _firstNode; node != nullptr; node = node->nextNode)
+	for (auto *node = _firstNode; node != nullptr; node = node->Next)
 	{
-		if (node->row == row && node->col == col)
+		if (node->Row == row && node->Col == col)
 		{
-			return node->value;
+			return node->Value;
 		}
 	}
 	return T();
@@ -135,31 +135,31 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 	{
 		auto position = GetPosition(row, col);
 		MatrixNode *prevNode = nullptr;
-		for (auto node = _firstNode; node != nullptr; node = node->nextNode)
+		for (auto node = _firstNode; node != nullptr; node = node->Next)
 		{
-			if (node->row == row && node->col == col)
+			if (node->Row == row && node->Col == col)
 			{
-				node->value = val;
+				node->Value = val;
 				return;
 			}
-			auto currentPosition = GetPosition(node->row, node->col);
+			auto currentPosition = GetPosition(node->Row, node->Col);
 			if (position < currentPosition)
 			{
 				auto *newNode = new MatrixNode(row, col, val);
 				if (prevNode == nullptr) // We have first and only node
 				{
-					newNode->nextNode = _firstNode;
+					newNode->Next = _firstNode;
 					_firstNode = newNode;
 					return;
 				}
-				prevNode->nextNode = newNode;
-				newNode->nextNode = node;
+				prevNode->Next = newNode;
+				newNode->Next = node;
 				return;
 			}
 			prevNode = node;
 		}
 		auto *newNode = new MatrixNode(row, col, val);
-		prevNode->nextNode = newNode;
+		prevNode->Next = newNode;
 	}
 }
 
@@ -172,18 +172,18 @@ bool LLSparseMatrix<T>::RemoveElement(int row, int col)
 	}
 
 	MatrixNode *prevNode = nullptr;
-	for (MatrixNode *node = _firstNode; node != nullptr; node = node->nextNode)
+	for (MatrixNode *node = _firstNode; node != nullptr; node = node->Next)
 	{
-		if (node->row == row && node->col == col)
+		if (node->Row == row && node->Col == col)
 		{
 			if (node == _firstNode)
 			{
-				_firstNode = node->nextNode;
+				_firstNode = node->Next;
 				delete node;
 			}
 			else
 			{
-				prevNode->nextNode = node->nextNode;
+				prevNode->Next = node->Next;
 				delete node;
 			}
 			--_nonZeroElementsCount;
@@ -203,10 +203,10 @@ void LLSparseMatrix<T>::Print(std::ostream &os) const
 	{
 		for (auto j = 0; j < _colCount; j++)
 		{
-			if (node && node->row == i && node->col == j)
+			if (node && node->Row == i && node->Col == j)
 			{
-				os << node->value << " ";
-				node = node->nextNode;
+				os << node->Value << " ";
+				node = node->Next;
 			}
 			else
 			{
@@ -239,9 +239,9 @@ size_t LLSparseMatrix<T>::GetColCount() const
 template<class T>
 void LLSparseMatrix<T>::Transpose()
 {
-	for (MatrixNode *node = _firstNode; node != nullptr; node = node->nextNode)
+	for (MatrixNode *node = _firstNode; node != nullptr; node = node->Next)
 	{
-		std::swap(node->row, node->col);
+		std::swap(node->Row, node->Col);
 	}
 	std::swap(_rowCount, _colCount);
 	SortByPosition(&_firstNode);
@@ -272,8 +272,8 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 	{
 		if (thisItr == nullptr)
 		{
-			// Last row ended
-			if (otherItr == nullptr || otherItr->nextNode == nullptr)
+			// Last Row ended
+			if (otherItr == nullptr || otherItr->Next == nullptr)
 			{
 				// We done
 				break;
@@ -284,15 +284,15 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 		if (otherItr == nullptr)
 		{
 			// We can reach the end of other mat before the current mat
-			while (!(currentRowStart->row < thisItr->row))
+			while (!(currentRowStart->Row < thisItr->Row))
 			{
-				if (thisItr->nextNode == nullptr)
+				if (thisItr->Next == nullptr)
 				{
-					// On the last row. Done
+					// On the last Row. Done
 					isLastRow = true;
 					break;
 				}
-				thisItr = thisItr->nextNode;
+				thisItr = thisItr->Next;
 			}
 			if (isLastRow)
 			{
@@ -302,61 +302,61 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 			currentRowStart = thisItr;
 			otherItr = other->_firstNode;
 		}
-		if (thisItr->row != currentRowStart->row)
+		if (thisItr->Row != currentRowStart->Row)
 		{
-			// We slipped over current row, get back
+			// We slipped over current Row, get back
 			thisItr = currentRowStart;
 		}
 
-		if (thisItr->col == otherItr->col)
+		if (thisItr->Col == otherItr->Col)
 		{
-			int i = thisItr->row;
-			int j = otherItr->row;
-			idxValMap[std::pair<int, int>(i, j)] += thisItr->value * otherItr->value;
+			int i = thisItr->Row;
+			int j = otherItr->Row;
+			idxValMap[std::pair<int, int>(i, j)] += thisItr->Value * otherItr->Value;
 
 
 			// Move both itrs if they both will be on the same line next turn
-			if (thisItr->nextNode == nullptr
-				|| otherItr->nextNode == nullptr
-				|| thisItr->nextNode->row == otherItr->nextNode->row)
+			if (thisItr->Next == nullptr
+				|| otherItr->Next == nullptr
+				|| thisItr->Next->Row == otherItr->Next->Row)
 			{
-				// If other row changes here, we can return first row to the beginning of line to prevent everything from breaking
-				if (otherItr->nextNode != nullptr && otherItr->row != otherItr->nextNode->row)
+				// If other Row changes here, we can return first Row to the beginning of line to prevent everything from breaking
+				if (otherItr->Next != nullptr && otherItr->Row != otherItr->Next->Row)
 				{
 					thisItr = currentRowStart;
 				}
 				else
 				{
-					thisItr = thisItr->nextNode;
+					thisItr = thisItr->Next;
 				}
-				otherItr = otherItr->nextNode;
+				otherItr = otherItr->Next;
 			}
-			else if (thisItr->nextNode->row > otherItr->nextNode->row)
+			else if (thisItr->Next->Row > otherItr->Next->Row)
 			{
-				otherItr = otherItr->nextNode;
+				otherItr = otherItr->Next;
 			}
-			else if (thisItr->nextNode->row < otherItr->nextNode->row)
+			else if (thisItr->Next->Row < otherItr->Next->Row)
 			{
-				thisItr = thisItr->nextNode;
+				thisItr = thisItr->Next;
 			}
 		}
-		else if (thisItr->col < otherItr->col)
+		else if (thisItr->Col < otherItr->Col)
 		{
-			// If thisItr stepped into another row, return otherItr to its beginning
-			if (thisItr->nextNode != nullptr && thisItr->row != thisItr->nextNode->row)
+			// If thisItr stepped into another Row, return otherItr to its beginning
+			if (thisItr->Next != nullptr && thisItr->Row != thisItr->Next->Row)
 			{
-				otherItr = otherItr->nextNode;
+				otherItr = otherItr->Next;
 			}
-			thisItr = thisItr->nextNode;
+			thisItr = thisItr->Next;
 		}
-		else //(thisItr->col > otherItr->col)
+		else //(thisItr->Col > otherItr->Col)
 		{
-			// If otherItr stepped into another row, return thisItr to its beginning
-			if (otherItr->nextNode != nullptr && otherItr->row != otherItr->nextNode->row)
+			// If otherItr stepped into another Row, return thisItr to its beginning
+			if (otherItr->Next != nullptr && otherItr->Row != otherItr->Next->Row)
 			{
 				thisItr = currentRowStart;
 			}
-			otherItr = otherItr->nextNode;
+			otherItr = otherItr->Next;
 		}
 	}
 	other->Transpose();
@@ -371,11 +371,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *oth
 
 template<class T>
 LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
-{/*
-	if (other == nullptr)
-	{
-		throw std::invalid_argument("Other matrix can't be nullptr");
-	}*/
+{
 	if (this->_colCount != other._rowCount)
 	{
 		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
@@ -394,7 +390,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	// Multiplication loop
 	/**
 	 * Iterate through first matrix elements A[i, j].
-	 * Multiply each one by every element in j-th row of other matrix.
+	 * Multiply each one by every element in j-th Row of other matrix.
 	 * Accumulate multiplication result in idxValMap
 	 * where key is pair of indices of element in resulting matrix.
 	 * This algorithm allows us to avoid matrix transposition or picking out column during multiplication
@@ -402,34 +398,34 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	while (thisPtr != nullptr)
 	{
 		// Just reset.
-		// Can't just remember previous row because of sparsity
+		// Can't just remember previous Row because of sparsity
 		otherPtr = other._firstNode;
 
-		// Find corresponding row
-		if (thisPtr->col != otherPtr->row)
+		// Find corresponding Row
+		if (thisPtr->Col != otherPtr->Row)
 		{
-			while (otherPtr != nullptr && thisPtr->col != otherPtr->row)
+			while (otherPtr != nullptr && thisPtr->Col != otherPtr->Row)
 			{
-				otherPtr = otherPtr->nextNode;
+				otherPtr = otherPtr->Next;
 			}
 			if (otherPtr == nullptr)
 			{
-				thisPtr = thisPtr->nextNode;
+				thisPtr = thisPtr->Next;
 				continue;
 			}
 		}
 
 		// Calculate partial sums
-		while (otherPtr != nullptr && thisPtr->col == otherPtr->row)
+		while (otherPtr != nullptr && thisPtr->Col == otherPtr->Row)
 		{
-			int i = thisPtr->row;
-			int j = otherPtr->col;
-			idxValMap[std::pair<int, int>(i, j)] += thisPtr->value * otherPtr->value;
+			int i = thisPtr->Row;
+			int j = otherPtr->Col;
+			idxValMap[std::pair<int, int>(i, j)] += thisPtr->Value * otherPtr->Value;
 
-			otherPtr = otherPtr->nextNode;
+			otherPtr = otherPtr->Next;
 		}
 
-		thisPtr = thisPtr->nextNode;
+		thisPtr = thisPtr->Next;
 	}
 
 	for (auto item : idxValMap)
@@ -446,7 +442,7 @@ void LLSparseMatrix<T>::SortByPosition(MatrixNode **head)
 {
 	MatrixNode *currentHead = *head;
 	MatrixNode *split1, *split2;
-	if (currentHead == nullptr || currentHead->nextNode == nullptr)
+	if (currentHead == nullptr || currentHead->Next == nullptr)
 	{
 		return;
 	}
@@ -461,21 +457,21 @@ void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNo
 {
 	// Floyd's tortoise algorithm of finding middle of linked list
 	MatrixNode *slow = head;
-	MatrixNode *fast = head->nextNode;
+	MatrixNode *fast = head->Next;
 
 	while (fast != nullptr)
 	{
-		fast = fast->nextNode;
+		fast = fast->Next;
 		if (fast != nullptr)
 		{
-			slow = slow->nextNode;
-			fast = fast->nextNode;
+			slow = slow->Next;
+			fast = fast->Next;
 		}
 	}
 
 	*first = head;
-	*second = slow->nextNode;
-	slow->nextNode = nullptr; // Tear list apart
+	*second = slow->Next;
+	slow->Next = nullptr; // Tear list apart
 }
 
 template<class T>
@@ -490,17 +486,17 @@ typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode
 	{
 		return list1;
 	}
-	auto firstPosition = GetPosition(list1->row, list1->col);
-	auto secondPosition = GetPosition(list2->row, list2->col);
+	auto firstPosition = GetPosition(list1->Row, list1->Col);
+	auto secondPosition = GetPosition(list2->Row, list2->Col);
 	if (firstPosition <= secondPosition)
 	{
 		newHead = list1;
-		newHead->nextNode = MergeLists(list1->nextNode, list2);
+		newHead->Next = MergeLists(list1->Next, list2);
 	}
 	else
 	{
 		newHead = list2;
-		newHead->nextNode = MergeLists(list1, list2->nextNode);
+		newHead->Next = MergeLists(list1, list2->Next);
 	}
 	return newHead;
 }
