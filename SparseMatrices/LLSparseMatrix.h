@@ -39,7 +39,7 @@ public:
 	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T>& other);
 	[[deprecated("Use multiply instead (more efficient)")]]
 	LLSparseMatrix<T> *Multiply_DEPRECATED(LLSparseMatrix<T> *other);
-	LLSparseMatrix<T>* operator*(LLSparseMatrix<T> &other);
+	LLSparseMatrix<T> *operator*(LLSparseMatrix<T> &other);
 private:
 	struct MatrixNode;
 	[[nodiscard]] bool InBoundaries(int row, int col) const;
