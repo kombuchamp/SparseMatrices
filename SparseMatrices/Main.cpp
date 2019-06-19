@@ -14,6 +14,11 @@ int main()
 	l.AddBefore(a, 2);
 	l.AddAfter(a, 90);
 
+	for (auto item : l)
+	{
+		cout << item << " ";
+	}
+
 	LLSparseMatrix<int> mat0(3, 3);
 	LLSparseMatrix<int> mat1(3, 3);
 /*

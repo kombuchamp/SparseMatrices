@@ -178,6 +178,47 @@ public:
 		MergeSort(&_first, Cmp);
 	}
 
+	/***********************
+	 *  Iterators 
+	 ***********************
+	 */
+
+	class iterator
+	{
+	public:
+		iterator(LinkedListNode<T> *node)
+		{
+			_ptr = node;
+		}
+		iterator &operator++()
+		{
+			_ptr = _ptr->Next;
+			return *this;
+		}
+		iterator &operator--()
+		{
+			_ptr = _ptr->Prev;
+			return *this;
+		}
+		bool operator!=(iterator other)
+		{
+			return _ptr != other._ptr;
+		}
+		T &operator*()
+		{
+			return _ptr->Value;
+		}
+	private:
+		LinkedListNode<T> *_ptr;
+	};
+	iterator begin()
+	{
+		return iterator(_first);
+	}
+	iterator end()
+	{
+		return iterator(nullptr); // not sure
+	}
 private:
 	bool ValidateNode(LinkedListNode<T> const *node)
 	{
