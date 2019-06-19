@@ -40,6 +40,10 @@ public:
 		{
 			return _ptr != other._ptr;
 		}
+		bool operator==(iterator other)
+		{
+			return _ptr == other._ptr;
+		}
 		T &operator*()
 		{
 			return _ptr->Value;
@@ -47,6 +51,10 @@ public:
 		T *operator->()
 		{
 			return &(_ptr->Value);
+		}
+		LinkedListNode<T> *data()
+		{
+			return _ptr;
 		}
 	private:
 		LinkedListNode<T> *_ptr;
@@ -159,12 +167,12 @@ public:
 
 	void AddAfter(iterator &it, T const &value)
 	{
-		AddAfter(it._ptr, value);
+		AddAfter(it.data(), value);
 	}
 
 	void AddBefore(iterator &it, T const &value)
 	{
-		AddBefore(it._ptr, value);
+		AddBefore(it.data(), value);
 	}
 
 	void Clear()
@@ -214,7 +222,10 @@ public:
 				{
 					auto old = _first;
 					_first = _first->Next;
-					_first->Prev = nullptr;
+					if (_first != nullptr)
+					{
+						_first->Prev = nullptr;
+					}
 					delete old;
 				}
 				else
@@ -231,8 +242,42 @@ public:
 		return false;
 	}
 
+	bool RemoveIf(std::function<bool(T &)> Pred)
+	{
+		if (_first == nullptr)
+		{
+			return false;
+		}
 
-	void Sort(std::function<bool(T a, T b)> Cmp)
+		for (auto current = _first; current != nullptr; current = current->Next)
+		{
+			if (Pred(current->Value))
+			{
+				if (current == _first)
+				{
+					auto old = _first;
+					_first = _first->Next;
+					if (_first != nullptr)
+					{
+						_first->Prev = nullptr;
+					}
+					delete old;
+				}
+				else
+				{
+					auto old = current;
+					current->Prev->Next = current->Next;
+					current->Next->Prev = current->Prev;
+					delete old;
+				}
+				--_count;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void Sort(std::function<bool(T &, T &)> Cmp)
 	{
 		MergeSort(&_first, Cmp);
 	}
@@ -271,7 +316,7 @@ private:
 		delete node;
 	}
 
-	void MergeSort(LinkedListNode<T> **head, std::function<bool(T a, T b)> Cmp)
+	void MergeSort(LinkedListNode<T> **head, std::function<bool(T &, T &)> Cmp)
 	{
 		LinkedListNode<T> *currentHead = *head;
 		LinkedListNode<T> *split1, *split2;
@@ -308,7 +353,7 @@ private:
 	}
 
 
-	LinkedListNode<T> *MergeLists(LinkedListNode<T> *list1, LinkedListNode<T> *list2, std::function<bool(T a, T b)> Cmp)
+	LinkedListNode<T> *MergeLists(LinkedListNode<T> *list1, LinkedListNode<T> *list2, std::function<bool(T &, T &)> Cmp)
 	{
 		LinkedListNode<T> *newHead;
 		if (list1 == nullptr)

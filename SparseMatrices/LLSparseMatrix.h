@@ -60,14 +60,16 @@ private:
 template<typename T>
 struct LLSparseMatrix<T>::MatrixNode
 {
+	MatrixNode() = default;
 	MatrixNode(const int row, const int col, T const &val)
 		: Row(row), Col(col), Value(val)/*, Next(nullptr)*/
 	{
 	}
+	MatrixNode &operator=(MatrixNode const &node) = default;
 	// TODO: std::list Mehtods with predicates wont work without this abomination. Figure out why
-	MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
-	MatrixNode(MatrixNode &&node) : MatrixNode(node.Row, node.Col, node.Value) {}
-	MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
+	//MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
+	//MatrixNode(MatrixNode &&node) : MatrixNode(node.Row, node.Col, node.Value) {}
+	//MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
 	int Row;
 	int Col;
 	T Value;
@@ -144,7 +146,7 @@ void LLSparseMatrix<T>::RemoveElement(int row, int col)
 		throw std::invalid_argument("Element indices are out of bounds");
 	}
 
-	_nonZeroElements.remove_if(
+	_nonZeroElements.RemoveIf(
 		[=](auto &elem)
 		{
 			return elem.Row == row && elem.Col == col;
@@ -177,7 +179,7 @@ void LLSparseMatrix<T>::Print(std::ostream &os) const
 template<typename T>
 size_t LLSparseMatrix<T>::GetNonZeroElementsCount() const
 {
-	return _nonZeroElements.size();
+	return _nonZeroElements.Count();
 }
 
 template<typename T>
@@ -201,8 +203,8 @@ void LLSparseMatrix<T>::Transpose()
 		std::swap(elem.Row, elem.Col);
 	}
 	std::swap(_rowCount, _colCount);
-	_nonZeroElements.sort(
-		[this](auto &first, auto &second)
+	_nonZeroElements.Sort(
+		[this](MatrixNode &first, MatrixNode &second)
 		{
 			return GetPosition(first.Row, first.Col) < GetPosition(second.Row, second.Col);
 		});
@@ -217,7 +219,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	}
 
 	auto *result = new LLSparseMatrix(this->_rowCount, other._colCount);
-	if (this->_nonZeroElements.empty() || other._nonZeroElements.empty())
+	if (this->_nonZeroElements.IsEmpty() || other._nonZeroElements.IsEmpty())
 	{
 		return result;
 	}
