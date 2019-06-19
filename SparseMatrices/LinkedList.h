@@ -14,7 +14,56 @@ struct LinkedListNode
 template <typename T>
 class LinkedList
 {
+	/***********************
+	 *  Iterators
+	 ***********************
+	 */
 public:
+	class iterator
+	{
+	public:
+		iterator(LinkedListNode<T> *node)
+		{
+			_ptr = node;
+		}
+		iterator &operator++()
+		{
+			_ptr = _ptr->Next;
+			return *this;
+		}
+		iterator &operator--()
+		{
+			_ptr = _ptr->Prev;
+			return *this;
+		}
+		bool operator!=(iterator other)
+		{
+			return _ptr != other._ptr;
+		}
+		T &operator*()
+		{
+			return _ptr->Value;
+		}
+		T *operator->()
+		{
+			return &(_ptr->Value);
+		}
+	private:
+		LinkedListNode<T> *_ptr;
+	};
+	iterator begin() const
+	{
+		return iterator(_first);
+	}
+	iterator end() const
+	{
+		return iterator(nullptr); // not sure
+	}
+
+	/*******************
+	 * Other members
+	 *******************
+	 */
 	~LinkedList()
 	{
 		Clear();
@@ -108,6 +157,16 @@ public:
 		++_count;
 	}
 
+	void AddAfter(iterator &it, T const &value)
+	{
+		AddAfter(it._ptr, value);
+	}
+
+	void AddBefore(iterator &it, T const &value)
+	{
+		AddBefore(it._ptr, value);
+	}
+
 	void Clear()
 	{
 		if (_first != nullptr)
@@ -178,47 +237,12 @@ public:
 		MergeSort(&_first, Cmp);
 	}
 
-	/***********************
-	 *  Iterators 
-	 ***********************
-	 */
+	bool IsEmpty()
+	{
+		return _first == nullptr;
+	}
 
-	class iterator
-	{
-	public:
-		iterator(LinkedListNode<T> *node)
-		{
-			_ptr = node;
-		}
-		iterator &operator++()
-		{
-			_ptr = _ptr->Next;
-			return *this;
-		}
-		iterator &operator--()
-		{
-			_ptr = _ptr->Prev;
-			return *this;
-		}
-		bool operator!=(iterator other)
-		{
-			return _ptr != other._ptr;
-		}
-		T &operator*()
-		{
-			return _ptr->Value;
-		}
-	private:
-		LinkedListNode<T> *_ptr;
-	};
-	iterator begin()
-	{
-		return iterator(_first);
-	}
-	iterator end()
-	{
-		return iterator(nullptr); // not sure
-	}
+
 private:
 	bool ValidateNode(LinkedListNode<T> const *node)
 	{

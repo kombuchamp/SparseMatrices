@@ -53,8 +53,8 @@ private:
 	MatrixNode *MergeLists(MatrixNode *list1, MatrixNode *list2);
 	size_t _rowCount;
 	size_t _colCount;
-	//LinkedList<MatrixNode> _nonZeroElements;
-	std::list<MatrixNode> _nonZeroElements;
+	LinkedList<MatrixNode> _nonZeroElements;
+	//std::list<MatrixNode> _nonZeroElements;
 };
 
 template<typename T>
@@ -92,7 +92,7 @@ T LLSparseMatrix<T>::ElementAt(int row, int col) const
 	{
 		throw std::invalid_argument("Element indices are out of bounds");
 	}
-	for (auto &elem : _nonZeroElements)
+	for (auto elem : _nonZeroElements)
 	{
 		if (elem.Row == row && elem.Col == col)
 		{
@@ -113,9 +113,9 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 	{
 		return;
 	}
-	if (_nonZeroElements.empty())
+	if (_nonZeroElements.IsEmpty())
 	{
-		_nonZeroElements.emplace_back(new MatrixNode(row, col, val));
+		_nonZeroElements.AddLast(MatrixNode(row, col, val));
 		return;
 	}
 	const auto newElementPosition = GetPosition(row, col);
@@ -129,11 +129,11 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 		}
 		if (newElementPosition < currentElementPosition)
 		{
-			_nonZeroElements.insert(elemIt, MatrixNode(row, col, val));
+			_nonZeroElements.AddBefore(elemIt, MatrixNode(row, col, val));
 			return;
 		}
 	}
-	_nonZeroElements.emplace_back(new MatrixNode(row, col, val));
+	_nonZeroElements.AddLast(MatrixNode(row, col, val));
 }
 
 template<typename T>

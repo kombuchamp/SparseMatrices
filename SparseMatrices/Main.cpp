@@ -21,7 +21,7 @@ int main()
 
 	LLSparseMatrix<int> mat0(3, 3);
 	LLSparseMatrix<int> mat1(3, 3);
-/*
+
 	mat0.SetElement(0, 0, 1);
 	mat0.SetElement(0, 1, 0);
 	mat0.SetElement(0, 2, 4);
@@ -52,5 +52,5 @@ int main()
 	cout << "DONE: " << endl;
 	cout << *mat2 << endl;
 
-	return 0;*/
+	return 0;
 }
