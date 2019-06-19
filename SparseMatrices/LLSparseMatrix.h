@@ -10,7 +10,6 @@
 #include <exception>
 #include <algorithm>
 #include <map>
-#include <list>
 #include <utility>
 #include <type_traits>
 #include "ISparseMatrix.h"
@@ -54,7 +53,6 @@ private:
 	size_t _rowCount;
 	size_t _colCount;
 	LinkedList<MatrixNode> _nonZeroElements;
-	//std::list<MatrixNode> _nonZeroElements;
 };
 
 template<typename T>
@@ -66,14 +64,9 @@ struct LLSparseMatrix<T>::MatrixNode
 	{
 	}
 	MatrixNode &operator=(MatrixNode const &node) = default;
-	// TODO: std::list Mehtods with predicates wont work without this abomination. Figure out why
-	//MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
-	//MatrixNode(MatrixNode &&node) : MatrixNode(node.Row, node.Col, node.Value) {}
-	//MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
 	int Row;
 	int Col;
 	T Value;
-	//MatrixNode *Next;
 };
 
 template<typename T>
@@ -275,7 +268,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	}
 	return result;
 }
-
 
 template<typename T>
 bool LLSparseMatrix<T>::InBoundaries(const int row, const int col) const
