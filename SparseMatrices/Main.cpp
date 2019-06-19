@@ -1,17 +1,22 @@
 #include "LLSparseMatrix.h"
 #include <iostream>
 #include <memory>
-
-#include "LinkedList.h"
 using std::cout;
 using std::endl;
-
+#include "LinkedList.h"
 
 int main()
 {
+	LinkedList<int> l;
+	l.AddFirst(12);
+	auto a = l.Find(12);
+
+	l.AddBefore(a, 2);
+	l.AddAfter(a, 90);
+
 	LLSparseMatrix<int> mat0(3, 3);
 	LLSparseMatrix<int> mat1(3, 3);
-
+/*
 	mat0.SetElement(0, 0, 1);
 	mat0.SetElement(0, 1, 0);
 	mat0.SetElement(0, 2, 4);
@@ -42,5 +47,5 @@ int main()
 	cout << "DONE: " << endl;
 	cout << *mat2 << endl;
 
-	return 0;
+	return 0;*/
 }

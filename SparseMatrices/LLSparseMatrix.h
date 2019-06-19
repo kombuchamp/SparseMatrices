@@ -14,6 +14,7 @@
 #include <utility>
 #include <type_traits>
 #include "ISparseMatrix.h"
+#include "LinkedList.h"
 
 template<typename T = double>
 class LLSparseMatrix : ISparseMatrix<T>
@@ -52,6 +53,7 @@ private:
 	MatrixNode *MergeLists(MatrixNode *list1, MatrixNode *list2);
 	size_t _rowCount;
 	size_t _colCount;
+	//LinkedList<MatrixNode> _nonZeroElements;
 	std::list<MatrixNode> _nonZeroElements;
 };
 

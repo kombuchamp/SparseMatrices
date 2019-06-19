@@ -74,12 +74,37 @@ public:
 		{
 			throw std::invalid_argument("Node is not from this list");
 		}
+		if (_last == node)
+		{
+			AddLast(value);
+			return;
+		}
 		auto *newNode = new LinkedListNode<T>();
 		newNode->Value = value;
 		newNode->Next = node->Next;
 		newNode->Prev = node;
 		node->Next->Prev = newNode;
 		node->Next = newNode;
+		++_count;
+	}
+
+	void AddBefore(LinkedListNode<T> *node, T const &value)
+	{
+		if (!ValidateNode(node))
+		{
+			throw std::invalid_argument("Node is not from this list");
+		}
+		if (_first == node)
+		{
+			AddFirst(value);
+			return;
+		}
+		auto *newNode = new LinkedListNode<T>();
+		newNode->Value = value;
+		newNode->Next = node;
+		newNode->Prev = node->Prev;
+		node->Prev->Next = newNode;
+		node->Prev = newNode;
 		++_count;
 	}
 
@@ -180,7 +205,7 @@ private:
 		ClearRecursive(node->Next);
 		delete node;
 	}
-	
+
 	void MergeSort(LinkedListNode<T> **head, std::function<bool(T a, T b)> Cmp)
 	{
 		LinkedListNode<T> *currentHead = *head;
