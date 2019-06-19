@@ -143,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ISparseMatrix.h" />
+    <ClInclude Include="LinkedList.h" />
     <ClInclude Include="LLSparseMatrix.h" />
   </ItemGroup>
   <ItemGroup>

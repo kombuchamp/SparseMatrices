@@ -24,7 +24,7 @@ public:
 	{
 	}
 	LLSparseMatrix(const int rows, const int cols)
-		: _rowCount(rows), _colCount(cols)/*, _nonZeroElementsCount(0)*/, _firstNode(nullptr)
+		: _rowCount(rows), _colCount(cols)
 	{
 		static_assert(std::is_default_constructible<T>::value, "Template type T should have default constructor");
 	}
@@ -272,76 +272,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	return result;
 }
 
-template <typename T>
-void LLSparseMatrix<T>::SortByPosition()
-{
-	// TODO: Create a namespace and move sorting function out of the class?
-	MergeSort(&_firstNode);
-}
-
-template<typename T>
-void LLSparseMatrix<T>::MergeSort(MatrixNode **head)
-{
-	MatrixNode *currentHead = *head;
-	MatrixNode *split1, *split2;
-	if (currentHead == nullptr || currentHead->Next == nullptr)
-	{
-		return;
-	}
-	SplitList(currentHead, &split1, &split2);
-	MergeSort(&split1);
-	MergeSort(&split2);
-	*head = MergeLists(split1, split2);
-}
-
-template<typename T>
-void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second)
-{
-	// Floyd's tortoise algorithm of finding middle of linked list
-	MatrixNode *slow = head;
-	MatrixNode *fast = head->Next;
-
-	while (fast != nullptr)
-	{
-		fast = fast->Next;
-		if (fast != nullptr)
-		{
-			slow = slow->Next;
-			fast = fast->Next;
-		}
-	}
-
-	*first = head;
-	*second = slow->Next;
-	slow->Next = nullptr; // Tear list apart
-}
-
-template<typename T>
-typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode *list1, MatrixNode *list2)
-{
-	MatrixNode *newHead;
-	if (list1 == nullptr)
-	{
-		return list2;
-	}
-	if (list2 == nullptr)
-	{
-		return list1;
-	}
-	auto firstPosition = GetPosition(list1->Row, list1->Col);
-	auto secondPosition = GetPosition(list2->Row, list2->Col);
-	if (firstPosition <= secondPosition)
-	{
-		newHead = list1;
-		newHead->Next = MergeLists(list1->Next, list2);
-	}
-	else
-	{
-		newHead = list2;
-		newHead->Next = MergeLists(list1, list2->Next);
-	}
-	return newHead;
-}
 
 template<typename T>
 bool LLSparseMatrix<T>::InBoundaries(const int row, const int col) const
