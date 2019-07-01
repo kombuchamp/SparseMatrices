@@ -50,15 +50,13 @@ private:
 template<typename T>
 struct LLSparseMatrix<T>::MatrixNode
 {
-	MatrixNode(const int row, const int col, T const &val)
+	MatrixNode(const size_t row, const size_t col, T const &val)
 		: Row(row), Col(col), Value(val)
 	{
 	}
 	MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
-	// TODO: std::list Mehtods with predicates wont work without this abomination. Figure out why
-	//MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
-	int Row;
-	int Col;
+	size_t Row;
+	size_t Col;
 	T Value;
 };
 
