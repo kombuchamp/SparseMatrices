@@ -38,13 +38,11 @@ public:
 	[[nodiscard]] size_t GetNonZeroElementsCount() const override;
 	[[nodiscard]] size_t GetRowCount() const override;
 	[[nodiscard]] size_t GetColCount() const override;
-	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T> &other);
-	LLSparseMatrix<T> *operator*(LLSparseMatrix<T> &other);
+	LLSparseMatrix<T> Multiply(LLSparseMatrix<T>& other);
 private:
 	struct MatrixNode;
 	[[nodiscard]] bool InBoundaries(int row, int col) const;
 	[[nodiscard]] int GetPosition(int row, int col) const;
-	MatrixNode *MergeLists(MatrixNode *list1, MatrixNode *list2);
 	size_t _rowCount;
 	size_t _colCount;
 	std::list<MatrixNode> _nonZeroElements;
@@ -202,14 +200,14 @@ void LLSparseMatrix<T>::Transpose()
 }
 
 template<typename T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
+LLSparseMatrix<T> LLSparseMatrix<T>::Multiply(LLSparseMatrix<T>& other)
 {
 	if (this->_colCount != other._rowCount)
 	{
 		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
 	}
 
-	auto *result = new LLSparseMatrix(this->_rowCount, other._colCount);
+	LLSparseMatrix result(this->_rowCount, other._colCount);
 	if (this->_nonZeroElements.empty() || other._nonZeroElements.empty())
 	{
 		return result;
@@ -254,7 +252,6 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 
 			++otherIt;
 		}
-
 		++thisIt;
 	}
 
@@ -262,7 +259,7 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	{
 		auto [indices, value] = item;
 		auto [i, j] = indices;
-		result->SetElement(i, j, value);
+		result.SetElement(i, j, value);
 	}
 	return result;
 }
@@ -284,10 +281,4 @@ std::ostream &operator<<(std::ostream &os, LLSparseMatrix<T> &mat)
 {
 	mat.Print(os);
 	return os;
-}
-
-template<typename T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::operator*(LLSparseMatrix<T> &other)
-{
-	return Multiply(other);
 }

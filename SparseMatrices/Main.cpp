@@ -27,7 +27,7 @@ int main()
 	cout << mat1 << endl;
 
 	auto resultMat = mat0.Multiply(mat1);
-	cout << *resultMat << endl;
+	cout << resultMat << endl;
 
 	return 0;
 }
@@ -63,10 +63,10 @@ int __main()
 	cout << mat1 << endl;
 	cout << "*STARTING PROCESS...*" << endl;
 
-	std::unique_ptr<LLSparseMatrix<int>> mat2(mat0 * mat1);
+	LLSparseMatrix<int> mat2 = mat0.Multiply(mat1);
 
 	cout << "DONE: " << endl;
-	cout << *mat2 << endl;
+	cout << mat2 << endl;
 
 	return 0;
 }
