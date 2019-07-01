@@ -52,17 +52,15 @@ template<typename T>
 struct LLSparseMatrix<T>::MatrixNode
 {
 	MatrixNode(const int row, const int col, T const &val)
-		: Row(row), Col(col), Value(val)/*, Next(nullptr)*/
+		: Row(row), Col(col), Value(val)
 	{
 	}
-	// TODO: std::list Mehtods with predicates wont work without this abomination. Figure out why
 	MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
-	MatrixNode(MatrixNode &&node) : MatrixNode(node.Row, node.Col, node.Value) {}
-	MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
+	// TODO: std::list Mehtods with predicates wont work without this abomination. Figure out why
+	//MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
 	int Row;
 	int Col;
 	T Value;
-	//MatrixNode *Next;
 };
 
 template<typename T>
@@ -106,7 +104,7 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 	}
 	if (_nonZeroElements.empty())
 	{
-		_nonZeroElements.emplace_back(new MatrixNode(row, col, val));
+		_nonZeroElements.emplace_back(MatrixNode(row, col, val));
 		return;
 	}
 	const auto newElementPosition = GetPosition(row, col);
@@ -124,7 +122,7 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 			return;
 		}
 	}
-	_nonZeroElements.emplace_back(new MatrixNode(row, col, val));
+	_nonZeroElements.emplace_back(MatrixNode(row, col, val));
 }
 
 template<typename T>
