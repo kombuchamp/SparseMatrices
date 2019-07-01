@@ -148,10 +148,10 @@ namespace SparseMatrices_Tests
 
 			auto resultMat = mat0.Multiply(mat1);
 
-			Assert::AreEqual(58, resultMat->ElementAt(0, 0));
-			Assert::AreEqual(64, resultMat->ElementAt(0, 1));
-			Assert::AreEqual(139, resultMat->ElementAt(1, 0));
-			Assert::AreEqual(154, resultMat->ElementAt(1, 1));
+			Assert::AreEqual(58, resultMat.ElementAt(0, 0));
+			Assert::AreEqual(64, resultMat.ElementAt(0, 1));
+			Assert::AreEqual(139, resultMat.ElementAt(1, 0));
+			Assert::AreEqual(154, resultMat.ElementAt(1, 1));
 		}
 
 		TEST_METHOD(ShouldMultiplySparseMatrices_0)
@@ -175,10 +175,10 @@ namespace SparseMatrices_Tests
 
 			auto resultMat = mat0.Multiply(mat1);
 
-			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
-			Assert::AreEqual(6, resultMat->ElementAt(0, 1));
-			Assert::AreEqual(23, resultMat->ElementAt(1, 0));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 0));
+			Assert::AreEqual(6, resultMat.ElementAt(0, 1));
+			Assert::AreEqual(23, resultMat.ElementAt(1, 0));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 1));
 		}
 
 		TEST_METHOD(ShouldMultiplySparseMatrices_1)
@@ -202,10 +202,10 @@ namespace SparseMatrices_Tests
 
 			auto resultMat = mat0.Multiply(mat1);
 
-			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
-			Assert::AreEqual(16, resultMat->ElementAt(0, 1));
-			Assert::AreEqual(15, resultMat->ElementAt(1, 0));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 0));
+			Assert::AreEqual(16, resultMat.ElementAt(0, 1));
+			Assert::AreEqual(15, resultMat.ElementAt(1, 0));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 1));
 		}
 
 		TEST_METHOD(ShouldMultiplySparseMatrices_2)
@@ -235,15 +235,15 @@ namespace SparseMatrices_Tests
 
 			auto resultMat = mat0.Multiply(mat1);
 
-			Assert::AreEqual(14, resultMat->ElementAt(0, 0));
-			Assert::AreEqual(16, resultMat->ElementAt(0, 1));
-			Assert::AreEqual(18, resultMat->ElementAt(0, 2));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 0));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 1));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 2));
-			Assert::AreEqual(35, resultMat->ElementAt(2, 0));
-			Assert::AreEqual(40, resultMat->ElementAt(2, 1));
-			Assert::AreEqual(45, resultMat->ElementAt(2, 2));
+			Assert::AreEqual(14, resultMat.ElementAt(0, 0));
+			Assert::AreEqual(16, resultMat.ElementAt(0, 1));
+			Assert::AreEqual(18, resultMat.ElementAt(0, 2));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 0));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 2));
+			Assert::AreEqual(35, resultMat.ElementAt(2, 0));
+			Assert::AreEqual(40, resultMat.ElementAt(2, 1));
+			Assert::AreEqual(45, resultMat.ElementAt(2, 2));
 		}
 
 		TEST_METHOD(ShouldMultiplySparseMatrices_3)
@@ -273,15 +273,15 @@ namespace SparseMatrices_Tests
 
 			auto resultMat = mat0.Multiply(mat1);
 
-			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
-			Assert::AreEqual(43, resultMat->ElementAt(0, 1));
-			Assert::AreEqual(0, resultMat->ElementAt(0, 2));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 0));
-			Assert::AreEqual(59, resultMat->ElementAt(1, 1));
-			Assert::AreEqual(0, resultMat->ElementAt(1, 2));
-			Assert::AreEqual(0, resultMat->ElementAt(2, 0));
-			Assert::AreEqual(75, resultMat->ElementAt(2, 1));
-			Assert::AreEqual(0, resultMat->ElementAt(2, 2));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 0));
+			Assert::AreEqual(43, resultMat.ElementAt(0, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 2));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 0));
+			Assert::AreEqual(59, resultMat.ElementAt(1, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(1, 2));
+			Assert::AreEqual(0, resultMat.ElementAt(2, 0));
+			Assert::AreEqual(75, resultMat.ElementAt(2, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(2, 2));
 		}
 
 		TEST_METHOD(ShouldMultiplySparseMatrices_4)
@@ -311,15 +311,15 @@ namespace SparseMatrices_Tests
 
 			auto resultMat = mat0.Multiply(mat1);
 
-			Assert::AreEqual(0, resultMat->ElementAt(0, 0));
-			Assert::AreEqual(0, resultMat->ElementAt(0, 1));
-			Assert::AreEqual(0, resultMat->ElementAt(0, 2));
-			Assert::AreEqual(25, resultMat->ElementAt(1, 0));
-			Assert::AreEqual(29, resultMat->ElementAt(1, 1));
-			Assert::AreEqual(33, resultMat->ElementAt(1, 2));
-			Assert::AreEqual(0, resultMat->ElementAt(2, 0));
-			Assert::AreEqual(0, resultMat->ElementAt(2, 1));
-			Assert::AreEqual(0, resultMat->ElementAt(2, 2));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 0));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(0, 2));
+			Assert::AreEqual(25, resultMat.ElementAt(1, 0));
+			Assert::AreEqual(29, resultMat.ElementAt(1, 1));
+			Assert::AreEqual(33, resultMat.ElementAt(1, 2));
+			Assert::AreEqual(0, resultMat.ElementAt(2, 0));
+			Assert::AreEqual(0, resultMat.ElementAt(2, 1));
+			Assert::AreEqual(0, resultMat.ElementAt(2, 2));
 		}
 	};
 }
