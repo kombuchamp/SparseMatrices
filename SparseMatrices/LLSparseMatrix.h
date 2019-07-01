@@ -27,7 +27,6 @@ public:
 	{
 		static_assert(std::is_default_constructible<T>::value, "Template type T should have default constructor");
 	}
-	~LLSparseMatrix() = default;
 	T ElementAt(int row, int col) const override;
 	void Resize(const size_t rows, const size_t cols) override;
 	void SetElement(int row, int col, T val) override;
@@ -54,7 +53,6 @@ struct LLSparseMatrix<T>::MatrixNode
 		: Row(row), Col(col), Value(val)
 	{
 	}
-	MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
 	size_t Row;
 	size_t Col;
 	T Value;
