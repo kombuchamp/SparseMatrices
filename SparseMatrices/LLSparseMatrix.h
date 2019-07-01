@@ -13,6 +13,7 @@
 #include <utility>
 #include <type_traits>
 #include "ISparseMatrix.h"
+#include "MatrixNode.h"
 
 template<typename T = double>
 class LLSparseMatrix : ISparseMatrix<T>
@@ -28,7 +29,7 @@ public:
 		static_assert(std::is_default_constructible<T>::value, "Template type T should have default constructor");
 	}
 	T ElementAt(int row, int col) const override;
-	void Resize(const size_t rows, const size_t cols) override;
+	void Resize(size_t rows, size_t cols) override;
 	void SetElement(int row, int col, T val) override;
 	void RemoveElement(int row, int col) override;
 	void Print(std::ostream &) const override;
@@ -38,24 +39,11 @@ public:
 	[[nodiscard]] size_t GetColCount() const override;
 	LLSparseMatrix<T> Multiply(LLSparseMatrix<T>& other);
 private:
-	struct MatrixNode;
-	[[nodiscard]] bool InBoundaries(const size_t row, const size_t col) const;
-	[[nodiscard]] int GetPosition(const size_t row, const size_t col) const;
+	[[nodiscard]] bool InBoundaries(size_t row, size_t col) const;
+	[[nodiscard]] int GetPosition(size_t row, size_t col) const;
 	size_t _rowCount;
 	size_t _colCount;
-	std::list<MatrixNode> _nonZeroElements;
-};
-
-template<typename T>
-struct LLSparseMatrix<T>::MatrixNode
-{
-	MatrixNode(const size_t row, const size_t col, T const &val)
-		: Row(row), Col(col), Value(val)
-	{
-	}
-	size_t Row;
-	size_t Col;
-	T Value;
+	std::list<MatrixNode<T>> _nonZeroElements;
 };
 
 template<typename T>

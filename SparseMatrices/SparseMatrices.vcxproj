@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="ISparseMatrix.h" />
     <ClInclude Include="LLSparseMatrix.h" />
+    <ClInclude Include="MatrixNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
