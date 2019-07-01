@@ -6,7 +6,6 @@
 */
 
 #pragma once
-#include <iostream>
 #include <exception>
 #include <algorithm>
 #include <map>
@@ -30,7 +29,7 @@ public:
 	}
 	~LLSparseMatrix() = default;
 	T ElementAt(int row, int col) const override;
-	void Resize(int rows, int cols) override;
+	void Resize(const size_t rows, const size_t cols) override;
 	void SetElement(int row, int col, T val) override;
 	void RemoveElement(int row, int col) override;
 	void Print(std::ostream &) const override;
@@ -41,8 +40,8 @@ public:
 	LLSparseMatrix<T> Multiply(LLSparseMatrix<T>& other);
 private:
 	struct MatrixNode;
-	[[nodiscard]] bool InBoundaries(int row, int col) const;
-	[[nodiscard]] int GetPosition(int row, int col) const;
+	[[nodiscard]] bool InBoundaries(const size_t row, const size_t col) const;
+	[[nodiscard]] int GetPosition(const size_t row, const size_t col) const;
 	size_t _rowCount;
 	size_t _colCount;
 	std::list<MatrixNode> _nonZeroElements;
@@ -64,7 +63,7 @@ struct LLSparseMatrix<T>::MatrixNode
 };
 
 template<typename T>
-void LLSparseMatrix<T>::Resize(const int rows, const int cols)
+void LLSparseMatrix<T>::Resize(const size_t rows, const size_t cols)
 {
 	if (rows < _rowCount || cols < _colCount)
 	{
@@ -145,9 +144,9 @@ template<typename T>
 void LLSparseMatrix<T>::Print(std::ostream &os) const
 {
 	auto it = _nonZeroElements.begin();
-	for (auto i = 0; i < _rowCount; i++)
+	for (size_t i = 0; i < _rowCount; i++)
 	{
-		for (auto j = 0; j < _colCount; j++)
+		for (size_t j = 0; j < _colCount; j++)
 		{
 			if (it != _nonZeroElements.end() && it->Row == i && it->Col == j)
 			{
@@ -263,13 +262,13 @@ LLSparseMatrix<T> LLSparseMatrix<T>::Multiply(LLSparseMatrix<T>& other)
 }
 
 template<typename T>
-bool LLSparseMatrix<T>::InBoundaries(const int row, const int col) const
+bool LLSparseMatrix<T>::InBoundaries(const size_t row, const size_t col) const
 {
 	return (row < _rowCount && row >= 0) && (col < _colCount && col >= 0);
 }
 
 template<typename T>
-int LLSparseMatrix<T>::GetPosition(const int row, const int col) const
+int LLSparseMatrix<T>::GetPosition(const size_t row, const size_t col) const
 {
 	return _colCount * row + col;
 }
