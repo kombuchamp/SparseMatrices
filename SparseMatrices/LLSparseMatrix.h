@@ -10,6 +10,7 @@
 #include <exception>
 #include <algorithm>
 #include <map>
+#include <list>
 #include <utility>
 #include <type_traits>
 #include "ISparseMatrix.h"
@@ -19,53 +20,48 @@ class LLSparseMatrix : ISparseMatrix<T>
 {
 public:
 	LLSparseMatrix()
-		: LLSparseMatrix(0, 0) { }
+		: LLSparseMatrix(0, 0)
+	{
+	}
 	LLSparseMatrix(const int rows, const int cols)
-		: _rowCount(rows), _colCount(cols), _nonZeroElementsCount(0), _firstNode(nullptr)
+		: _rowCount(rows), _colCount(cols)
 	{
 		static_assert(std::is_default_constructible<T>::value, "Template type T should have default constructor");
 	}
-	~LLSparseMatrix();
+	~LLSparseMatrix() = default;
 	T ElementAt(int row, int col) const override;
 	void Resize(int rows, int cols) override;
 	void SetElement(int row, int col, T val) override;
-	bool RemoveElement(int row, int col) override;
+	void RemoveElement(int row, int col) override;
 	void Print(std::ostream &) const override;
 	void Transpose() override;
 	[[nodiscard]] size_t GetNonZeroElementsCount() const override;
 	[[nodiscard]] size_t GetRowCount() const override;
 	[[nodiscard]] size_t GetColCount() const override;
-	LLSparseMatrix<T> *Multiply(LLSparseMatrix<T>& other);
-	[[deprecated("Use multiply instead (more efficient)")]]
-	LLSparseMatrix<T> *Multiply_DEPRECATED(LLSparseMatrix<T> *other);
-	LLSparseMatrix<T> *operator*(LLSparseMatrix<T> &other);
+	LLSparseMatrix<T> Multiply(LLSparseMatrix<T>& other);
 private:
 	struct MatrixNode;
 	[[nodiscard]] bool InBoundaries(int row, int col) const;
 	[[nodiscard]] int GetPosition(int row, int col) const;
-	void SortByPosition();
-	void MergeSort(MatrixNode **head);
-	void SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second);
-	MatrixNode *MergeLists(MatrixNode *list1, MatrixNode *list2);
 	size_t _rowCount;
 	size_t _colCount;
-	size_t _nonZeroElementsCount;
-	MatrixNode *_firstNode;
+	std::list<MatrixNode> _nonZeroElements;
 };
 
 template<typename T>
 struct LLSparseMatrix<T>::MatrixNode
 {
 	MatrixNode(const int row, const int col, T const &val)
-		: Row(row), Col(col), Value(val), Next(nullptr)
+		: Row(row), Col(col), Value(val)
 	{
 	}
+	MatrixNode(MatrixNode const &node) : MatrixNode(node.Row, node.Col, node.Value){}
+	// TODO: std::list Mehtods with predicates wont work without this abomination. Figure out why
+	//MatrixNode(MatrixNode *node) : MatrixNode(node->Row, node->Col, node->Value) {}
 	int Row;
 	int Col;
 	T Value;
-	MatrixNode *Next;
 };
-
 
 template<typename T>
 void LLSparseMatrix<T>::Resize(const int rows, const int cols)
@@ -79,37 +75,17 @@ void LLSparseMatrix<T>::Resize(const int rows, const int cols)
 }
 
 template<typename T>
-LLSparseMatrix<T>::~LLSparseMatrix()
-{
-	if (_firstNode == nullptr)
-	{
-		return;
-	}
-	if (_firstNode->Next == nullptr)
-	{
-		delete _firstNode;
-		return;
-	}
-	MatrixNode *prevNode = _firstNode;
-	for (MatrixNode *node = _firstNode->Next; node != nullptr; node = node->Next)
-	{
-		delete prevNode;
-		prevNode = node;
-	}
-}
-
-template<typename T>
 T LLSparseMatrix<T>::ElementAt(int row, int col) const
 {
 	if (!InBoundaries(row, col))
 	{
 		throw std::invalid_argument("Element indices are out of bounds");
 	}
-	for (auto *node = _firstNode; node != nullptr; node = node->Next)
+	for (auto &elem : _nonZeroElements)
 	{
-		if (node->Row == row && node->Col == col)
+		if (elem.Row == row && elem.Col == col)
 		{
-			return node->Value;
+			return elem.Value;
 		}
 	}
 	return T();
@@ -126,87 +102,57 @@ void LLSparseMatrix<T>::SetElement(int row, int col, T val)
 	{
 		return;
 	}
-	++_nonZeroElementsCount;
-	if (_firstNode == nullptr)
+	if (_nonZeroElements.empty())
 	{
-		_firstNode = new MatrixNode(row, col, val);
+		_nonZeroElements.emplace_back(MatrixNode(row, col, val));
+		return;
 	}
-	else
+	const auto newElementPosition = GetPosition(row, col);
+	for (auto elemIt = _nonZeroElements.begin(); elemIt != _nonZeroElements.end(); ++elemIt)
 	{
-		auto position = GetPosition(row, col);
-		MatrixNode *prevNode = nullptr;
-		for (auto node = _firstNode; node != nullptr; node = node->Next)
+		auto currentElementPosition = GetPosition(elemIt->Row, elemIt->Col);
+		if (newElementPosition == currentElementPosition)
 		{
-			if (node->Row == row && node->Col == col)
-			{
-				node->Value = val;
-				return;
-			}
-			auto currentPosition = GetPosition(node->Row, node->Col);
-			if (position < currentPosition)
-			{
-				auto *newNode = new MatrixNode(row, col, val);
-				if (prevNode == nullptr) // We have first and only node
-				{
-					newNode->Next = _firstNode;
-					_firstNode = newNode;
-					return;
-				}
-				prevNode->Next = newNode;
-				newNode->Next = node;
-				return;
-			}
-			prevNode = node;
+			elemIt->Value = val;
+			return;
 		}
-		auto *newNode = new MatrixNode(row, col, val);
-		prevNode->Next = newNode;
+		if (newElementPosition < currentElementPosition)
+		{
+			_nonZeroElements.insert(elemIt, MatrixNode(row, col, val));
+			return;
+		}
 	}
+	_nonZeroElements.emplace_back(MatrixNode(row, col, val));
 }
 
 template<typename T>
-bool LLSparseMatrix<T>::RemoveElement(int row, int col)
+void LLSparseMatrix<T>::RemoveElement(int row, int col)
 {
 	if (!InBoundaries(row, col))
 	{
 		throw std::invalid_argument("Element indices are out of bounds");
 	}
 
-	MatrixNode *prevNode = nullptr;
-	for (MatrixNode *node = _firstNode; node != nullptr; node = node->Next)
-	{
-		if (node->Row == row && node->Col == col)
+	_nonZeroElements.remove_if(
+		[=](auto &elem)
 		{
-			if (node == _firstNode)
-			{
-				_firstNode = node->Next;
-				delete node;
-			}
-			else
-			{
-				prevNode->Next = node->Next;
-				delete node;
-			}
-			--_nonZeroElementsCount;
-			return true;
-		}
-		prevNode = node;
-	}
-	return false;
+			return elem.Row == row && elem.Col == col;
+		});
 }
 
 
 template<typename T>
 void LLSparseMatrix<T>::Print(std::ostream &os) const
 {
-	auto *node = _firstNode;
+	auto it = _nonZeroElements.begin();
 	for (auto i = 0; i < _rowCount; i++)
 	{
 		for (auto j = 0; j < _colCount; j++)
 		{
-			if (node && node->Row == i && node->Col == j)
+			if (it != _nonZeroElements.end() && it->Row == i && it->Col == j)
 			{
-				os << node->Value << " ";
-				node = node->Next;
+				os << it->Value << " ";
+				++it;
 			}
 			else
 			{
@@ -220,7 +166,7 @@ void LLSparseMatrix<T>::Print(std::ostream &os) const
 template<typename T>
 size_t LLSparseMatrix<T>::GetNonZeroElementsCount() const
 {
-	return _nonZeroElementsCount;
+	return _nonZeroElements.size();
 }
 
 template<typename T>
@@ -239,152 +185,33 @@ size_t LLSparseMatrix<T>::GetColCount() const
 template<typename T>
 void LLSparseMatrix<T>::Transpose()
 {
-	for (MatrixNode *node = _firstNode; node != nullptr; node = node->Next)
+	for (auto &elem : _nonZeroElements)
 	{
-		std::swap(node->Row, node->Col);
+		std::swap(elem.Row, elem.Col);
 	}
 	std::swap(_rowCount, _colCount);
-	SortByPosition();
-}
-
-/**
- * Naive implementation of matrix multiplication
- * This algorithm is inefficient, ugly, non-robust and the only reason I'm keeping it here
- * being amounts of blood I spilled figuring it out.
- * I came up with something more efficient, see Multiply method
- */
-template<typename T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply_DEPRECATED(LLSparseMatrix<T> *other)
-{
-	if (this->_colCount != other->_rowCount)
-	{
-		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
-	}
-	auto *result = new LLSparseMatrix(this->_rowCount, other->_colCount);
-	other->Transpose();
-	auto *thisItr = this->_firstNode;
-	auto *otherItr = other->_firstNode;
-	std::map< std::pair<int, int>, T> idxValMap;
-	auto *currentRowStart = thisItr;
-	bool isLastRow = false;
-
-	while (true)
-	{
-		if (thisItr == nullptr)
+	_nonZeroElements.sort(
+		[this](auto &first, auto &second)
 		{
-			// Last Row ended
-			if (otherItr == nullptr || otherItr->Next == nullptr)
-			{
-				// We done
-				break;
-			}
-			isLastRow = true;
-			thisItr = currentRowStart;
-		}
-		if (otherItr == nullptr)
-		{
-			// We can reach the end of other mat before the current mat
-			while (!(currentRowStart->Row < thisItr->Row))
-			{
-				if (thisItr->Next == nullptr)
-				{
-					// On the last Row. Done
-					isLastRow = true;
-					break;
-				}
-				thisItr = thisItr->Next;
-			}
-			if (isLastRow)
-			{
-				// Done
-				break;
-			}
-			currentRowStart = thisItr;
-			otherItr = other->_firstNode;
-		}
-		if (thisItr->Row != currentRowStart->Row)
-		{
-			// We slipped over current Row, get back
-			thisItr = currentRowStart;
-		}
-
-		if (thisItr->Col == otherItr->Col)
-		{
-			int i = thisItr->Row;
-			int j = otherItr->Row;
-			idxValMap[std::pair<int, int>(i, j)] += thisItr->Value * otherItr->Value;
-
-
-			// Move both itrs if they both will be on the same line next turn
-			if (thisItr->Next == nullptr
-				|| otherItr->Next == nullptr
-				|| thisItr->Next->Row == otherItr->Next->Row)
-			{
-				// If other Row changes here, we can return first Row to the beginning of line to prevent everything from breaking
-				if (otherItr->Next != nullptr && otherItr->Row != otherItr->Next->Row)
-				{
-					thisItr = currentRowStart;
-				}
-				else
-				{
-					thisItr = thisItr->Next;
-				}
-				otherItr = otherItr->Next;
-			}
-			else if (thisItr->Next->Row > otherItr->Next->Row)
-			{
-				otherItr = otherItr->Next;
-			}
-			else if (thisItr->Next->Row < otherItr->Next->Row)
-			{
-				thisItr = thisItr->Next;
-			}
-		}
-		else if (thisItr->Col < otherItr->Col)
-		{
-			// If thisItr stepped into another Row, return otherItr to its beginning
-			if (thisItr->Next != nullptr && thisItr->Row != thisItr->Next->Row)
-			{
-				otherItr = otherItr->Next;
-			}
-			thisItr = thisItr->Next;
-		}
-		else //(thisItr->Col > otherItr->Col)
-		{
-			// If otherItr stepped into another Row, return thisItr to its beginning
-			if (otherItr->Next != nullptr && otherItr->Row != otherItr->Next->Row)
-			{
-				thisItr = currentRowStart;
-			}
-			otherItr = otherItr->Next;
-		}
-	}
-	other->Transpose();
-	for (auto item : idxValMap)
-	{
-		auto [indices, value] = item;
-		auto [i, j] = indices;
-		result->SetElement(i, j, value);
-	}
-	return result;
+			return GetPosition(first.Row, first.Col) < GetPosition(second.Row, second.Col);
+		});
 }
 
 template<typename T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
+LLSparseMatrix<T> LLSparseMatrix<T>::Multiply(LLSparseMatrix<T>& other)
 {
 	if (this->_colCount != other._rowCount)
 	{
 		throw std::invalid_argument("Invalid argument: impossible to multiply incompatible matrices");
 	}
 
-	auto *result = new LLSparseMatrix(this->_rowCount, other._colCount);
-	if (this->_firstNode == nullptr || other._firstNode == nullptr)
+	LLSparseMatrix result(this->_rowCount, other._colCount);
+	if (this->_nonZeroElements.empty() || other._nonZeroElements.empty())
 	{
 		return result;
 	}
-
-	auto *thisPtr = this->_firstNode;
-	auto *otherPtr = other._firstNode;
+	auto thisIt = this->_nonZeroElements.begin();
+	auto otherIt = other._nonZeroElements.begin();
 	std::map<std::pair<int, int>, T> idxValMap;
 
 	// Multiplication loop
@@ -395,117 +222,44 @@ LLSparseMatrix<T> *LLSparseMatrix<T>::Multiply(LLSparseMatrix<T> &other)
 	 * where key is pair of indices of element in resulting matrix.
 	 * This algorithm allows us to avoid matrix transposition or picking out column during multiplication
 	 */
-	while (thisPtr != nullptr)
-	{
-		// Just reset.
-		// Can't just remember previous Row because of sparsity
-		otherPtr = other._firstNode;
 
-		// Find corresponding Row
-		if (thisPtr->Col != otherPtr->Row)
+	while (thisIt != this->_nonZeroElements.end())
+	{
+		otherIt = other._nonZeroElements.begin();
+
+		// Find corresponding row
+		if (thisIt->Col != otherIt->Row)
 		{
-			while (otherPtr != nullptr && thisPtr->Col != otherPtr->Row)
+			while (otherIt != other._nonZeroElements.end() && thisIt->Col != otherIt->Row)
 			{
-				otherPtr = otherPtr->Next;
+				++otherIt;
 			}
-			if (otherPtr == nullptr)
+			if (otherIt == other._nonZeroElements.end())
 			{
-				thisPtr = thisPtr->Next;
+				++thisIt;
 				continue;
 			}
 		}
 
 		// Calculate partial sums
-		while (otherPtr != nullptr && thisPtr->Col == otherPtr->Row)
+		while (otherIt != other._nonZeroElements.end() && thisIt->Col == otherIt->Row)
 		{
-			int i = thisPtr->Row;
-			int j = otherPtr->Col;
-			idxValMap[std::pair<int, int>(i, j)] += thisPtr->Value * otherPtr->Value;
+			int i = thisIt->Row;
+			int j = otherIt->Col;
+			idxValMap[std::pair<int, int>(i, j)] += thisIt->Value * otherIt->Value;
 
-			otherPtr = otherPtr->Next;
+			++otherIt;
 		}
-
-		thisPtr = thisPtr->Next;
+		++thisIt;
 	}
 
 	for (auto item : idxValMap)
 	{
 		auto [indices, value] = item;
 		auto [i, j] = indices;
-		result->SetElement(i, j, value);
+		result.SetElement(i, j, value);
 	}
 	return result;
-}
-
-template <typename T>
-void LLSparseMatrix<T>::SortByPosition()
-{
-	// TODO: Create a namespace and move sorting function out of the class?
-	MergeSort(&_firstNode);
-}
-
-template<typename T>
-void LLSparseMatrix<T>::MergeSort(MatrixNode **head)
-{
-	MatrixNode *currentHead = *head;
-	MatrixNode *split1, *split2;
-	if (currentHead == nullptr || currentHead->Next == nullptr)
-	{
-		return;
-	}
-	SplitList(currentHead, &split1, &split2);
-	MergeSort(&split1);
-	MergeSort(&split2);
-	*head = MergeLists(split1, split2);
-}
-
-template<typename T>
-void LLSparseMatrix<T>::SplitList(MatrixNode *head, MatrixNode **first, MatrixNode **second)
-{
-	// Floyd's tortoise algorithm of finding middle of linked list
-	MatrixNode *slow = head;
-	MatrixNode *fast = head->Next;
-
-	while (fast != nullptr)
-	{
-		fast = fast->Next;
-		if (fast != nullptr)
-		{
-			slow = slow->Next;
-			fast = fast->Next;
-		}
-	}
-
-	*first = head;
-	*second = slow->Next;
-	slow->Next = nullptr; // Tear list apart
-}
-
-template<typename T>
-typename LLSparseMatrix<T>::MatrixNode *LLSparseMatrix<T>::MergeLists(MatrixNode *list1, MatrixNode *list2)
-{
-	MatrixNode *newHead;
-	if (list1 == nullptr)
-	{
-		return list2;
-	}
-	if (list2 == nullptr)
-	{
-		return list1;
-	}
-	auto firstPosition = GetPosition(list1->Row, list1->Col);
-	auto secondPosition = GetPosition(list2->Row, list2->Col);
-	if (firstPosition <= secondPosition)
-	{
-		newHead = list1;
-		newHead->Next = MergeLists(list1->Next, list2);
-	}
-	else
-	{
-		newHead = list2;
-		newHead->Next = MergeLists(list1, list2->Next);
-	}
-	return newHead;
 }
 
 template<typename T>
@@ -525,10 +279,4 @@ std::ostream &operator<<(std::ostream &os, LLSparseMatrix<T> &mat)
 {
 	mat.Print(os);
 	return os;
-}
-
-template<typename T>
-LLSparseMatrix<T> *LLSparseMatrix<T>::operator*(LLSparseMatrix<T> &other)
-{
-	return Multiply(other);
 }
