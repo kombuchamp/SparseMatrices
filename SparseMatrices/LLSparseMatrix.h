@@ -16,7 +16,7 @@
 #include "MatrixNode.h"
 
 template<typename T = double>
-class LLSparseMatrix : ISparseMatrix<T>
+class LLSparseMatrix
 {
 public:
 	LLSparseMatrix()

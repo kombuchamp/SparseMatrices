@@ -142,7 +142,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ISparseMatrix.h" />
     <ClInclude Include="LLSparseMatrix.h" />
     <ClInclude Include="MatrixNode.h" />
   </ItemGroup>
