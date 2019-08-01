@@ -28,15 +28,15 @@ public:
 	{
 		static_assert(std::is_default_constructible<T>::value, "Template type T should have default constructor");
 	}
-	T ElementAt(int row, int col) const override;
-	void Resize(size_t rows, size_t cols) override;
-	void SetElement(int row, int col, T val) override;
-	void RemoveElement(int row, int col) override;
-	void Print(std::ostream &) const override;
-	void Transpose() override;
-	[[nodiscard]] size_t GetNonZeroElementsCount() const override;
-	[[nodiscard]] size_t GetRowCount() const override;
-	[[nodiscard]] size_t GetColCount() const override;
+	T ElementAt(int row, int col) const;
+	void Resize(size_t rows, size_t cols);
+	void SetElement(int row, int col, T val);
+	void RemoveElement(int row, int col);
+	void Print(std::ostream &) const;
+	void Transpose();
+	[[nodiscard]] size_t GetNonZeroElementsCount() const;
+	[[nodiscard]] size_t GetRowCount() const;
+	[[nodiscard]] size_t GetColCount() const;
 	LLSparseMatrix<T> Multiply(LLSparseMatrix<T>& other);
 private:
 	[[nodiscard]] bool InBoundaries(size_t row, size_t col) const;
